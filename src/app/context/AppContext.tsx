@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   collection, doc, setDoc, addDoc, deleteDoc, updateDoc, getDocs,
-  onSnapshot, query, orderBy,
+  onSnapshot, query, orderBy, writeBatch,
 } from 'firebase/firestore';
 import { db, ensureAuth } from '../firebase';
 import { useT } from '../i18n/I18nContext';
@@ -65,6 +65,7 @@ interface AppContextValue {
   createGroup: (name: string, budget: number, currency: string, members: Member[]) => Promise<string>;
   joinGroup: (groupId: string, member: Member) => Promise<void>;
   enterGroup: (groupId: string) => Promise<void>;
+  convertCurrency: (newSymbol: string, rate: number) => Promise<void>;
   enterDemoMode: () => void;
   deleteMember: (id: string) => Promise<boolean>;
   addMember: (m: Member) => void;
@@ -529,6 +530,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setDemoMode(false);
   }, []);
 
+  // ── convertCurrency ────────────────────────────────────────────────
+  const convertCurrency = useCallback(async (newSymbol: string, rate: number): Promise<void> => {
+    const oldDigits = getCurrencyMinorDigits(currency);
+    const newDigits = getCurrencyMinorDigits(newSymbol);
+
+    function convert(oldMinor: number): number {
+      const oldMajor = oldMinor / Math.pow(10, oldDigits);
+      const newMajor = oldMajor * rate;
+      return Math.round(newMajor * Math.pow(10, newDigits));
+    }
+
+    if (!demoMode && groupId) {
+      const batch = writeBatch(db);
+
+      for (const exp of expenses) {
+        batch.update(doc(db, 'groups', groupId, 'expenses', exp.id), { amount: convert(exp.amount) });
+      }
+      for (const con of contributions) {
+        batch.update(doc(db, 'groups', groupId, 'contributions', con.id), { amount: convert(con.amount) });
+      }
+      batch.update(doc(db, 'groups', groupId), {
+        currency: newSymbol,
+        budget: convert(budget),
+      });
+
+      await batch.commit();
+    }
+
+    setCurrencyLocal(newSymbol);
+    setBudget(b => convert(b));
+    setExpenses(prev => prev.map(e => ({ ...e, amount: convert(e.amount) })));
+    setContributions(prev => prev.map(c => ({ ...c, amount: convert(c.amount) })));
+  }, [currency, groupId, demoMode, expenses, contributions, budget]);
+
   // ── enterDemoMode ──────────────────────────────────────────────────
   const enterDemoMode = useCallback(() => {
     // Clean up any existing Firestore listeners
@@ -724,7 +759,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       contributions, addContribution, deleteContribution,
       fundBalance, fundSpent, totalContributions, budget,
       groupId, demoMode, isLoading,
-      createGroup, joinGroup, enterGroup, enterDemoMode, deleteMember, addMember,
+      createGroup, joinGroup, enterGroup, convertCurrency, enterDemoMode, deleteMember, addMember,
       getMember, fmt,
       unreadCount, markAllRead,
       notifications, toggleNotifications,

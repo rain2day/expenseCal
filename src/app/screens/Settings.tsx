@@ -64,6 +64,12 @@ function SectionCard({ title, children }: { title: string; children: React.React
 
 const CURRENCY_CODES = ['¥', '$', 'HK$', '€', '£', 'NT$', 'RM', 'S$', '₩', '฿'] as const;
 
+const SYMBOL_TO_ISO: Record<string, string> = {
+  '¥': 'JPY', '$': 'USD', 'HK$': 'HKD', '€': 'EUR',
+  '£': 'GBP', 'NT$': 'TWD', 'RM': 'MYR', 'S$': 'SGD',
+  '₩': 'KRW', '฿': 'THB',
+};
+
 const CURRENCY_LABEL_KEYS: Record<string, string> = {
   '¥': 'currJPY',
   '$': 'currUSD',
@@ -82,7 +88,7 @@ export function Settings() {
   const { t, locale, setLocale } = useT();
   const {
     darkMode, toggleDarkMode, groupName, setGroupName,
-    currency, setCurrency, showToast,
+    currency, setCurrency, convertCurrency, showToast,
     clearAllExpenses, expenses, members,
     notifications, toggleNotifications,
     totalContributions,
@@ -95,6 +101,10 @@ export function Settings() {
   const [tempName, setTempName] = useState(groupName);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [pendingCurrency, setPendingCurrency] = useState<string | null>(null);
+  const [pendingRate, setPendingRate] = useState<number | null>(null);
+  const [isFetchingRate, setIsFetchingRate] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const [connectId, setConnectId] = useState('');
   const [showPdfReport, setShowPdfReport] = useState(false);
   const [pdfExporting, setPdfExporting] = useState(false);
@@ -105,6 +115,62 @@ export function Settings() {
     code,
     label: t.settings[CURRENCY_LABEL_KEYS[code] as keyof typeof t.settings] as string,
   }));
+
+  async function handleCurrencySelect(symbol: string) {
+    if (symbol === currency) {
+      setShowCurrencyPicker(false);
+      return;
+    }
+    const fromISO = SYMBOL_TO_ISO[currency];
+    const toISO = SYMBOL_TO_ISO[symbol];
+    if (!fromISO || !toISO) {
+      setCurrency(symbol);
+      setShowCurrencyPicker(false);
+      showToast('success', `${t.settings.currencyChanged} ${symbol}`);
+      return;
+    }
+    setIsFetchingRate(true);
+    try {
+      const res = await fetch(`https://api.frankfurter.app/latest?from=${fromISO}&to=${toISO}`);
+      const data = await res.json();
+      const rate: number = data.rates?.[toISO];
+      if (!rate) throw new Error('no rate');
+      setPendingCurrency(symbol);
+      setPendingRate(rate);
+    } catch {
+      showToast('error', t.settings.fetchRateFailed);
+      setCurrency(symbol);
+      setShowCurrencyPicker(false);
+      showToast('success', `${t.settings.currencyChanged} ${symbol}`);
+    } finally {
+      setIsFetchingRate(false);
+    }
+  }
+
+  async function handleConvert() {
+    if (!pendingCurrency || pendingRate === null) return;
+    setIsConverting(true);
+    try {
+      await convertCurrency(pendingCurrency, pendingRate);
+      showToast('success', t.settings.convertSuccess);
+    } catch {
+      showToast('error', t.settings.fetchRateFailed);
+    } finally {
+      setIsConverting(false);
+      setPendingCurrency(null);
+      setPendingRate(null);
+      setShowCurrencyPicker(false);
+    }
+  }
+
+  function handleSymbolOnly() {
+    if (!pendingCurrency) return;
+    setCurrency(pendingCurrency);
+    showToast('success', `${t.settings.currencyChanged} ${pendingCurrency}`);
+    setPendingCurrency(null);
+    setPendingRate(null);
+    setShowCurrencyPicker(false);
+  }
 
   function confirmName() {
     if (tempName.trim()) {
@@ -258,20 +324,47 @@ export function Settings() {
                 {currencies.map(c => (
                   <button
                     key={c.code}
-                    onClick={() => {
-                      setCurrency(c.code);
-                      setShowCurrencyPicker(false);
-                      showToast('success', `${t.settings.currencyChanged} ${c.code}`);
-                    }}
-                    className={`flex items-center justify-center py-2 rounded-xl text-xl transition-colors ${
+                    onClick={() => handleCurrencySelect(c.code)}
+                    disabled={isFetchingRate}
+                    className={`flex items-center justify-center py-2 rounded-xl text-xl transition-colors disabled:opacity-50 ${
                       currency === c.code
                         ? 'bg-accent-bg ring-2 ring-primary'
                         : 'hover:bg-secondary'
                     }`}
                   >
-                    {c.label.split(' ')[0]}
+                    {isFetchingRate && pendingCurrency === null ? '…' : c.label.split(' ')[0]}
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Currency conversion dialog */}
+          {pendingCurrency && pendingRate !== null && (
+            <div className="mx-4 mb-3 p-4 bg-accent-bg border border-primary/30 rounded-2xl">
+              <p className="text-sm font-bold text-foreground mb-1">{t.settings.convertDialogTitle}</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                {t.settings.convertDialogRate(
+                  SYMBOL_TO_ISO[currency] ?? currency,
+                  SYMBOL_TO_ISO[pendingCurrency] ?? pendingCurrency,
+                  pendingRate.toFixed(4),
+                )}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleConvert}
+                  disabled={isConverting}
+                  className="flex-1 bg-primary text-white text-xs font-bold py-2 rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
+                >
+                  {isConverting ? t.settings.converting : t.settings.convertAmounts}
+                </button>
+                <button
+                  onClick={handleSymbolOnly}
+                  disabled={isConverting}
+                  className="flex-1 bg-secondary border border-border text-xs font-bold py-2 rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
+                >
+                  {t.settings.symbolOnly}
+                </button>
               </div>
             </div>
           )}
