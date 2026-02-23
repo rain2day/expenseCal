@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db, ensureAuth } from '../firebase';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
@@ -13,13 +13,16 @@ function getInitials(name: string) {
   return c.length === 1 ? c : c[0].toUpperCase();
 }
 
+type ExistingMember = { id: string; name: string; initials: string; color: string };
+
 export function JoinGroup() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
-  const { joinGroup, showToast } = useApp();
+  const { joinGroup, enterGroup, showToast } = useApp();
   const { t } = useT();
 
   const [groupName, setGroupName] = useState<string | null>(null);
+  const [existingMembers, setExistingMembers] = useState<ExistingMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [name, setName] = useState('');
@@ -38,6 +41,13 @@ export function JoinGroup() {
         const snap = await getDoc(doc(db, 'groups', groupId!));
         if (snap.exists()) {
           setGroupName(snap.data().name || t.joinGroup.unnamedGroup);
+          const membersSnap = await getDocs(collection(db, 'groups', groupId!, 'members'));
+          setExistingMembers(membersSnap.docs.map(d => ({
+            id: d.id,
+            name: d.data().name,
+            initials: d.data().initials,
+            color: d.data().color,
+          })));
         } else {
           setNotFound(true);
         }
@@ -52,23 +62,52 @@ export function JoinGroup() {
     fetchGroup();
   }, [groupId]);
 
+  async function handleClaimMember() {
+    if (!groupId || isJoining) return;
+    setIsJoining(true);
+    try {
+      await enterGroup(groupId);
+      showToast('success', t.joinGroup.joinSuccess);
+      navigate('/app/dashboard');
+    } catch (err) {
+      console.error('Failed to enter group:', err);
+      showToast('error', t.joinGroup.joinFailed);
+    } finally {
+      setIsJoining(false);
+    }
+  }
+
   async function handleJoin() {
     if (!name.trim() || !groupId || isJoining) return;
     setIsJoining(true);
     try {
       const color = MEMBER_COLORS[Math.floor(Math.random() * MEMBER_COLORS.length)];
-      const memberData = {
+      await joinGroup(groupId, {
         id: Date.now().toString(),
         name: name.trim(),
         initials: getInitials(name),
         color,
         role: 'member' as const,
-      };
-      await joinGroup(groupId, memberData);
+      });
       showToast('success', t.joinGroup.joinSuccess);
       navigate('/app/dashboard');
     } catch (err) {
       console.error('Failed to join group:', err);
+      showToast('error', t.joinGroup.joinFailed);
+    } finally {
+      setIsJoining(false);
+    }
+  }
+
+  async function handleViewOnly() {
+    if (!groupId || isJoining) return;
+    setIsJoining(true);
+    try {
+      await enterGroup(groupId);
+      showToast('success', t.joinGroup.viewOnlySuccess);
+      navigate('/app/dashboard');
+    } catch (err) {
+      console.error('Failed to enter group:', err);
       showToast('error', t.joinGroup.joinFailed);
     } finally {
       setIsJoining(false);
@@ -91,9 +130,7 @@ export function JoinGroup() {
             </>
           ) : notFound ? (
             <>
-              <div className="w-16 h-16 rounded-2xl bg-accent-bg flex items-center justify-center text-3xl mx-auto mb-4">
-                ❌
-              </div>
+              <div className="w-16 h-16 rounded-2xl bg-accent-bg flex items-center justify-center text-3xl mx-auto mb-4">❌</div>
               <h1 className="text-xl font-black text-foreground mb-2">{t.joinGroup.notFound}</h1>
               <p className="text-sm text-muted-foreground mb-6">{t.joinGroup.notFoundDesc}</p>
               <button
@@ -109,35 +146,69 @@ export function JoinGroup() {
                 公
               </div>
               <h1 className="text-xl font-black text-foreground mb-1">{t.joinGroup.joinTitle}</h1>
-              <p className="text-sm text-muted-foreground mb-6">
-                {t.joinGroup.invitedTo(groupName!)}
-              </p>
+              <p className="text-sm text-muted-foreground mb-6">{t.joinGroup.invitedTo(groupName!)}</p>
 
+              {/* Existing members: "你係邊位？" */}
+              {existingMembers.length > 0 && (
+                <div className="mb-5 text-left">
+                  <p className="text-xs font-bold text-muted-foreground mb-2">{t.joinGroup.whoAreYou}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {existingMembers.map(m => (
+                      <button
+                        key={m.id}
+                        onClick={handleClaimMember}
+                        disabled={isJoining}
+                        className="flex items-center gap-1.5 bg-secondary border border-border hover:border-primary rounded-full px-2.5 py-1.5 transition-colors active:scale-95"
+                      >
+                        <div
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                          style={{ background: m.color }}
+                        >
+                          {m.initials}
+                        </div>
+                        <span className="text-sm text-foreground">{m.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Divider */}
+              {existingMembers.length > 0 && (
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-subtle">{t.joinGroup.orSeparator}</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+              )}
+
+              {/* New member input */}
               <div className="text-left mb-4">
-                <label className="block text-xs text-muted-foreground mb-1.5">{t.joinGroup.yourName}</label>
+                <label className="block text-xs text-muted-foreground mb-1.5">{t.joinGroup.joinAsNew}</label>
                 <input
                   value={name}
                   onChange={e => setName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleJoin()}
                   placeholder={t.joinGroup.namePlaceholder}
                   className="w-full bg-secondary border border-border rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary transition-colors placeholder:text-subtle"
-                  autoFocus
+                  autoFocus={existingMembers.length === 0}
                 />
               </div>
 
               <button
                 onClick={handleJoin}
                 disabled={!name.trim() || isJoining}
-                className="w-full bg-primary disabled:opacity-30 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-98 transition-transform"
+                className="w-full bg-primary disabled:opacity-30 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-98 transition-transform mb-3"
               >
                 {isJoining ? t.joinGroup.joining : t.joinGroup.joinButton}
               </button>
 
               <button
-                onClick={() => navigate('/')}
-                className="mt-3 w-full text-subtle text-sm py-2 active:opacity-70"
+                onClick={handleViewOnly}
+                disabled={isJoining}
+                className="w-full text-subtle text-sm py-2 active:opacity-70"
               >
-                {t.joinGroup.backHome}
+                {t.joinGroup.viewOnly}
               </button>
             </>
           )}

@@ -318,6 +318,11 @@ export const zh: Translations = {
     joinSuccess: '已成功加入群組',
     joinFailed: '加入群組失敗',
     unnamedGroup: '未命名群組',
+    whoAreYou: '你係邊位？',
+    orSeparator: '或者',
+    joinAsNew: '以新成員身份加入',
+    viewOnly: '只睇，唔加入',
+    viewOnlySuccess: '已進入群組',
   },
   receiptScan: {
     title: '掃描收據',

@@ -64,6 +64,7 @@ interface AppContextValue {
   isLoading: boolean;
   createGroup: (name: string, budget: number, currency: string, members: Member[]) => Promise<string>;
   joinGroup: (groupId: string, member: Member) => Promise<void>;
+  enterGroup: (groupId: string) => Promise<void>;
   enterDemoMode: () => void;
   deleteMember: (id: string) => Promise<boolean>;
   addMember: (m: Member) => void;
@@ -520,6 +521,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setDemoMode(false);
   }, []);
 
+  // ── enterGroup (view-only / claim existing member) ─────────────────
+  const enterGroup = useCallback(async (gid: string): Promise<void> => {
+    await ensureAuth();
+    localStorage.setItem('gcd-groupId', gid);
+    setGroupId(gid);
+    setDemoMode(false);
+  }, []);
+
   // ── enterDemoMode ──────────────────────────────────────────────────
   const enterDemoMode = useCallback(() => {
     // Clean up any existing Firestore listeners
@@ -715,7 +724,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       contributions, addContribution, deleteContribution,
       fundBalance, fundSpent, totalContributions, budget,
       groupId, demoMode, isLoading,
-      createGroup, joinGroup, enterDemoMode, deleteMember, addMember,
+      createGroup, joinGroup, enterGroup, enterDemoMode, deleteMember, addMember,
       getMember, fmt,
       unreadCount, markAllRead,
       notifications, toggleNotifications,

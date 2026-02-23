@@ -318,6 +318,11 @@ export const ja: Translations = {
     joinSuccess: 'グループに参加しました',
     joinFailed: 'グループへの参加に失敗しました',
     unnamedGroup: '無名グループ',
+    whoAreYou: 'あなたは誰ですか？',
+    orSeparator: 'または',
+    joinAsNew: '新しいメンバーとして参加',
+    viewOnly: '見るだけ、参加しない',
+    viewOnlySuccess: 'グループに入りました',
   },
   receiptScan: {
     title: 'レシート読取',
