@@ -1,0 +1,92 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isShortString(v, maxLen) {
+      return v is string && v.size() > 0 && v.size() <= maxLen;
+    }
+
+    function isDateString(v) {
+      return v is string && v.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function isAmountMinorUnit(v) {
+      // Amounts are stored as integer minor units (e.g. yen, cents).
+      return v is int && v > 0 && v <= 1000000000;
+    }
+
+    function isMemberRole(v) {
+      return v == 'admin' || v == 'member';
+    }
+
+    function isCategory(v) {
+      return v in ['food', 'transport', 'accommodation', 'tickets', 'shopping', 'other'];
+    }
+
+    function validGroupData(data) {
+      return data.keys().hasOnly(['name', 'budget', 'currency', 'createdAt']) &&
+        isShortString(data.name, 80) &&
+        isAmountMinorUnit(data.budget) &&
+        isShortString(data.currency, 4) &&
+        isShortString(data.createdAt, 40);
+    }
+
+    function validMemberData(data) {
+      return data.keys().hasOnly(['name', 'initials', 'color', 'role']) &&
+        isShortString(data.name, 40) &&
+        isShortString(data.initials, 8) &&
+        isShortString(data.color, 16) &&
+        isMemberRole(data.role);
+    }
+
+    function validExpenseData(data) {
+      return data.keys().hasOnly(['amount', 'description', 'category', 'paidBy', 'splitAmong', 'date', 'createdAt']) &&
+        isAmountMinorUnit(data.amount) &&
+        isShortString(data.description, 120) &&
+        isCategory(data.category) &&
+        isShortString(data.paidBy, 64) &&
+        data.splitAmong is list &&
+        data.splitAmong.size() > 0 &&
+        data.splitAmong.size() <= 30 &&
+        isDateString(data.date) &&
+        (!data.keys().hasAny(['createdAt']) || isShortString(data.createdAt, 40));
+    }
+
+    function validContributionData(data) {
+      return data.keys().hasOnly(['memberId', 'amount', 'date', 'note', 'createdAt']) &&
+        isShortString(data.memberId, 64) &&
+        isAmountMinorUnit(data.amount) &&
+        isDateString(data.date) &&
+        (!data.keys().hasAny(['note']) || (data.note is string && data.note.size() <= 120)) &&
+        (!data.keys().hasAny(['createdAt']) || isShortString(data.createdAt, 40));
+    }
+
+    match /groups/{groupId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && validGroupData(request.resource.data);
+      allow delete: if isSignedIn();
+
+      match /members/{memberId} {
+        allow read: if isSignedIn();
+        allow create, update: if isSignedIn() && validMemberData(request.resource.data);
+        allow delete: if isSignedIn();
+      }
+
+      match /expenses/{expenseId} {
+        allow read: if isSignedIn();
+        allow create, update: if isSignedIn() && validExpenseData(request.resource.data);
+        allow delete: if isSignedIn();
+      }
+
+      match /contributions/{contributionId} {
+        allow read: if isSignedIn();
+        allow create, update: if isSignedIn() && validContributionData(request.resource.data);
+        allow delete: if isSignedIn();
+      }
+    }
+  }
+}

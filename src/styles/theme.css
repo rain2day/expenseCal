@@ -1,0 +1,943 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: var(--background-base, #F5EEE8);
+  --foreground: #1C0C08;
+  --card: #FFFFFF;
+  --card-foreground: #1C0C08;
+  --popover: #FFFFFF;
+  --popover-foreground: #1C0C08;
+  --primary: #DD843C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0E4DA;
+  --secondary-foreground: #1C0C08;
+  --muted: #EDE0D8;
+  --muted-foreground: #9A7565;
+  --accent: #DD843C;
+  --accent-foreground: #FFFFFF;
+  --destructive: #D05242;
+  --destructive-foreground: #FFFFFF;
+  --border: rgba(60, 30, 15, 0.12);
+  --input: transparent;
+  --input-background: #EDE0D8;
+  --switch-background: #C8A898;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #DD843C;
+  --chart-1: #DD843C;
+  --chart-2: #5A7EC5;
+  --chart-3: #72A857;
+  --chart-4: #9055A0;
+  --chart-5: #C05A5A;
+  --radius: 0.75rem;
+  --sidebar: #F0E4DA;
+  --sidebar-foreground: #1C0C08;
+  --sidebar-primary: #DD843C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EDE0D8;
+  --sidebar-accent-foreground: #1C0C08;
+  --sidebar-border: rgba(60, 30, 15, 0.12);
+  --sidebar-ring: #DD843C;
+  --subtle: #B8A090;
+  --accent-bg: #FDF0E6;
+  --success: #4A9036;
+  --success-bg: #EAF5E4;
+  --purple: #7B4A8C;
+  --purple-bg: #F3EAF6;
+  --dark-gradient: linear-gradient(145deg, #2A2C35 0%, #20232C 34%, #1C2233 62%, #372A24 100%);
+  --geo-tone-a: #98653F;
+  --geo-tone-b: #5E463E;
+  --geo-tone-c: #25283E;
+  --geo-fill-1: color-mix(in srgb, var(--geo-tone-a) 24%, transparent);
+  --geo-fill-2: color-mix(in srgb, var(--geo-tone-b) 20%, transparent);
+  /* Pre-computed: mix(#98653F 46%, #5E463E 54%) 16% = rgba(121,84,62,0.16) */
+  --geo-fill-3: rgba(121, 84, 62, 0.16);
+  --geo-fill-4: color-mix(in srgb, var(--geo-tone-c) 18%, transparent);
+  --geo-radial: color-mix(in srgb, var(--geo-tone-a) 20%, transparent);
+  --geo-accent-1: color-mix(in srgb, var(--geo-tone-c) 18%, transparent);
+  --geo-accent-2: color-mix(in srgb, var(--geo-tone-b) 16%, transparent);
+  --geo-before-opacity: 0.26;
+  --geo-after-opacity: 0.16;
+  --panel-blur: 44px;
+  --sidebar-blur: 36px;
+  --panel-surface-light: rgba(255, 255, 255, 0.16);
+  --panel-border-light: rgba(255, 255, 255, 0.24);
+  --panel-surface-dark: rgba(18, 24, 44, 0.14);
+  --panel-border-dark: rgba(176, 192, 255, 0.24);
+}
+
+.dark,
+.dark-theme {
+  --background: var(--bg-dark, #20232C);
+  --foreground: var(--gray-12, #EAEDFF);
+  --card: color-mix(in srgb, var(--gray-2, #25283E) 36%, transparent);
+  --card-foreground: var(--gray-12, #EAEDFF);
+  --popover: color-mix(in srgb, var(--gray-2, #25283E) 88%, var(--bg-dark, #20232C));
+  --popover-foreground: var(--gray-12, #EAEDFF);
+  --primary: #DD843C;
+  --primary-foreground: #FFFFFF;
+  --secondary: color-mix(in srgb, var(--gray-4, #30335F) 60%, transparent);
+  --secondary-foreground: var(--gray-12, #EAEDFF);
+  --muted: color-mix(in srgb, var(--gray-4, #30335F) 56%, transparent);
+  --muted-foreground: var(--gray-11, #A3ACFF);
+  --accent: #DD843C;
+  --accent-foreground: #FFFFFF;
+  --destructive: #D05242;
+  --destructive-foreground: var(--gray-12, #EAEDFF);
+  --border: color-mix(in srgb, var(--gray-10, #6C71E2) 26%, transparent);
+  --input: color-mix(in srgb, var(--gray-9, #6164D6) 18%, transparent);
+  --input-background: color-mix(in srgb, var(--gray-2, #25283E) 78%, transparent);
+  --switch-background: color-mix(in srgb, var(--gray-8, #5759C3) 62%, var(--bg-dark, #20232C));
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #DD843C;
+  --chart-1: #DD843C;
+  --chart-2: var(--gray-10, #6C71E2);
+  --chart-3: #72A857;
+  --chart-4: color-mix(in srgb, var(--gray-8, #5759C3) 78%, #9055A0);
+  --chart-5: #C05A5A;
+  --sidebar: color-mix(in srgb, var(--gray-2, #25283E) 74%, transparent);
+  --sidebar-foreground: var(--gray-12, #EAEDFF);
+  --sidebar-primary: #DD843C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: color-mix(in srgb, var(--gray-4, #30335F) 56%, transparent);
+  --sidebar-accent-foreground: var(--gray-12, #EAEDFF);
+  --sidebar-border: color-mix(in srgb, var(--gray-10, #6C71E2) 22%, transparent);
+  --sidebar-ring: #DD843C;
+  --subtle: var(--gray-11, #A3ACFF);
+  --accent-bg: color-mix(in srgb, var(--orange-9, #DD843C) 20%, var(--bg-dark, #20232C));
+  --success: #72A857;
+  --success-bg: color-mix(in srgb, #72A857 30%, transparent);
+  --purple: #9055A0;
+  --purple-bg: color-mix(in srgb, #9055A0 28%, transparent);
+  --geo-tone-a: #98653F;
+  --geo-tone-b: #5E463E;
+  --geo-tone-c: #25283E;
+  /* Pre-computed from nested color-mix — Safari silently fails on nested color-mix().
+     Fallback colors: tone-a=#98653F, tone-b=#5E463E, tone-c=#25283E, bg-dark=#20232C */
+  --geo-fill-1: rgba(109, 77, 56, 0.38);
+  --geo-fill-2: rgba(69, 56, 55, 0.34);
+  --geo-fill-3: rgba(121, 84, 62, 0.30);
+  --geo-fill-4: rgba(35, 38, 54, 0.28);
+  --geo-radial: rgba(116, 81, 57, 0.34);
+  --geo-accent-1: rgba(36, 39, 57, 0.28);
+  --geo-accent-2: rgba(77, 60, 57, 0.26);
+  --geo-before-opacity: 0.58;
+  --geo-after-opacity: 0.3;
+  --panel-blur: 52px;
+  --sidebar-blur: 42px;
+  --panel-surface-dark: rgba(30, 32, 48, 0.36);
+  --panel-border-dark: rgba(120, 100, 80, 0.22);
+}
+
+.dark,
+.dark-theme {
+  --orange-1: #27221F;
+  --orange-2: #2E2722;
+  --orange-3: #3E2E23;
+  --orange-4: #4D321F;
+  --orange-5: #593922;
+  --orange-6: #66442B;
+  --orange-7: #7A5235;
+  --orange-8: #98653F;
+  --orange-9: #DD843C;
+  --orange-10: #D0782E;
+  --orange-11: #F8AC75;
+  --orange-12: #FCDFCA;
+  --orange-a1: #E7070009;
+  --orange-a2: #F2600011;
+  --orange-a3: #FB740023;
+  --orange-a4: #FD6D0034;
+  --orange-a5: #FD780642;
+  --orange-a6: #FD8B2951;
+  --orange-a7: #FF984367;
+  --orange-a8: #FE9D508A;
+  --orange-a9: #FE953ED9;
+  --orange-a10: #FE8F2FCA;
+  --orange-a11: #FFB178F7;
+  --orange-a12: #FFE2CBFC;
+  --orange-contrast: #FFFFFF;
+  --orange-surface: #3C2B1980;
+  --orange-indicator: #DD843C;
+  --orange-track: #DD843C;
+  --gray-1: #1F2138;
+  --gray-2: #25283E;
+  --gray-3: #2C2F4E;
+  --gray-4: #30335F;
+  --gray-5: #34376C;
+  --gray-6: #3A3E7B;
+  --gray-7: #444794;
+  --gray-8: #5759C3;
+  --gray-9: #6164D6;
+  --gray-10: #6C71E2;
+  --gray-11: #A3ACFF;
+  --gray-12: #EAEDFF;
+  --gray-a1: #1002F80F;
+  --gray-a2: #5A5DFD16;
+  --gray-a3: #696CFB2A;
+  --gray-a4: #6265FE3E;
+  --gray-a5: #6265FD4E;
+  --gray-a6: #666BFE60;
+  --gray-a7: #696CFF7E;
+  --gray-a8: #6D6EFFB7;
+  --gray-a9: #7173FFCE;
+  --gray-a10: #797DFFDC;
+  --gray-a11: #A3ACFF;
+  --gray-a12: #EAEDFF;
+  --gray-contrast: #FFFFFF;
+  --gray-surface: rgba(0, 0, 0, 0.05);
+  --gray-indicator: #6164D6;
+  --gray-track: #6164D6;
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+  @media (color-gamut: p3) {
+    .dark,
+    .dark-theme {
+      --orange-1: oklch(25.7% 0.0083 56.43);
+      --orange-2: oklch(27.8% 0.0129 56.43);
+      --orange-3: oklch(31.6% 0.0291 56.43);
+      --orange-4: oklch(34.5% 0.0493 56.43);
+      --orange-5: oklch(37.7% 0.0576 56.43);
+      --orange-6: oklch(41.9% 0.0611 56.43);
+      --orange-7: oklch(47.6% 0.0682 56.43);
+      --orange-8: oklch(55.3% 0.0843 56.43);
+      --orange-9: oklch(69.6% 0.1387 56.43);
+      --orange-10: oklch(65.8% 0.1387 56.43);
+      --orange-11: oklch(80.5% 0.1141 56.43);
+      --orange-12: oklch(92.2% 0.0427 56.43);
+      --orange-a1: color(display-p3 0.9843 0 0 / 0.023);
+      --orange-a2: color(display-p3 0.9882 0.4235 0 / 0.055);
+      --orange-a3: color(display-p3 1 0.5255 0 / 0.122);
+      --orange-a4: color(display-p3 0.9961 0.4863 0 / 0.181);
+      --orange-a5: color(display-p3 1 0.5294 0.0863 / 0.23);
+      --orange-a6: color(display-p3 1 0.6 0.2235 / 0.289);
+      --orange-a7: color(display-p3 1 0.6549 0.3294 / 0.374);
+      --orange-a8: color(display-p3 1 0.6667 0.3725 / 0.505);
+      --orange-a9: color(display-p3 1 0.6392 0.3255 / 0.793);
+      --orange-a10: color(display-p3 1 0.6157 0.2784 / 0.735);
+      --orange-a11: color(display-p3 1 0.7333 0.5255 / 0.919);
+      --orange-a12: color(display-p3 1 0.9059 0.8275 / 0.964);
+      --orange-contrast: #FFFFFF;
+      --orange-surface: color(display-p3 0.2118 0.1647 0.1059 / 0.5);
+      --orange-indicator: oklch(69.6% 0.1387 56.43);
+      --orange-track: oklch(69.6% 0.1387 56.43);
+      --gray-1: oklch(25.7% 0.0431 278.3);
+      --gray-2: oklch(28.5% 0.0412 278.3);
+      --gray-3: oklch(31.8% 0.0559 278.3);
+      --gray-4: oklch(34.1% 0.0769 278.3);
+      --gray-5: oklch(36.3% 0.0906 278.3);
+      --gray-6: oklch(39.2% 0.1018 278.3);
+      --gray-7: oklch(43.7% 0.1233 278.3);
+      --gray-8: oklch(52% 0.161 278.3);
+      --gray-9: oklch(56.2% 0.1712 278.3);
+      --gray-10: oklch(60% 0.1684 278.3);
+      --gray-11: oklch(77.7% 0.1417 278.3);
+      --gray-12: oklch(94.9% 0.0264 278.3);
+      --gray-a1: color(display-p3 0 0 1 / 0.052);
+      --gray-a2: color(display-p3 0.3725 0.3804 0.9922 / 0.081);
+      --gray-a3: color(display-p3 0.4314 0.4392 1 / 0.156);
+      --gray-a4: color(display-p3 0.4 0.4078 1 / 0.232);
+      --gray-a5: color(display-p3 0.4 0.4078 1 / 0.293);
+      --gray-a6: color(display-p3 0.4157 0.4353 0.9961 / 0.359);
+      --gray-a7: color(display-p3 0.4314 0.4392 1 / 0.472);
+      --gray-a8: color(display-p3 0.4392 0.4471 1 / 0.684);
+      --gray-a9: color(display-p3 0.4588 0.4667 1 / 0.774);
+      --gray-a10: color(display-p3 0.4863 0.5059 1 / 0.831);
+      --gray-a11: color(display-p3 0.6627 0.6902 1 / 0.972);
+      --gray-a12: color(display-p3 0.9294 0.9373 1 / 0.991);
+      --gray-contrast: #FFFFFF;
+      --gray-surface: color(display-p3 0 0 0 / 5%);
+      --gray-indicator: oklch(56.2% 0.1712 278.3);
+      --gray-track: oklch(56.2% 0.1712 278.3);
+    }
+  }
+}
+
+.dark,
+.dark-theme,
+:is(.dark, .dark-theme) :where(.radix-themes:not(.light, .light-theme)) {
+  --color-background: var(--bg-dark, #20232C);
+}
+
+/* ── BG Preset overrides for non-warm themes ─────────────────────────── */
+/* Slate */
+[data-bg-preset="slate"] {
+  --secondary: #E2E6EC;
+  --muted: #DAE0E8;
+  --input-background: #DAE0E8;
+  --switch-background: #A0AAB8;
+  --sidebar: #E2E6EC;
+  --sidebar-accent: #DAE0E8;
+  --sidebar-border: rgba(30, 40, 60, 0.12);
+  --border: rgba(30, 40, 60, 0.12);
+  --geo-tone-a: #7286BE;
+  --geo-tone-b: #95A6D2;
+  --geo-tone-c: #9EAED5;
+}
+.dark[data-bg-preset="slate"] {
+  --card: rgba(25, 32, 48, 0.65);
+  --secondary: rgba(35, 45, 65, 0.55);
+  --muted: rgba(35, 45, 65, 0.55);
+  --input-background: rgba(15, 20, 35, 0.6);
+  --switch-background: #1E2840;
+  --sidebar: rgba(18, 24, 40, 0.7);
+  --sidebar-accent: rgba(35, 45, 65, 0.55);
+  --sidebar-border: rgba(100, 140, 200, 0.12);
+  --border: rgba(100, 140, 200, 0.15);
+  --popover: #1A2238;
+  --geo-tone-a: #89A8E8;
+  --geo-tone-b: #6074C8;
+  --geo-tone-c: #7F95D9;
+}
+/* Forest */
+[data-bg-preset="forest"] {
+  --secondary: #DDE8DD;
+  --muted: #D5E2D5;
+  --input-background: #D5E2D5;
+  --switch-background: #90A890;
+  --sidebar: #DDE8DD;
+  --sidebar-accent: #D5E2D5;
+  --sidebar-border: rgba(20, 50, 25, 0.12);
+  --border: rgba(20, 50, 25, 0.12);
+  --geo-tone-a: #5F9278;
+  --geo-tone-b: #93BAA2;
+  --geo-tone-c: #79B083;
+}
+.dark[data-bg-preset="forest"] {
+  --card: rgba(20, 38, 22, 0.65);
+  --secondary: rgba(28, 50, 30, 0.55);
+  --muted: rgba(28, 50, 30, 0.55);
+  --input-background: rgba(12, 22, 14, 0.6);
+  --switch-background: #142A16;
+  --sidebar: rgba(14, 24, 16, 0.7);
+  --sidebar-accent: rgba(28, 50, 30, 0.55);
+  --sidebar-border: rgba(80, 160, 90, 0.12);
+  --border: rgba(80, 160, 90, 0.15);
+  --popover: #162A18;
+  --geo-tone-a: #5AA877;
+  --geo-tone-b: #3F8560;
+  --geo-tone-c: #8ABB71;
+}
+/* Plum */
+[data-bg-preset="plum"] {
+  --secondary: #E8DDF0;
+  --muted: #E0D5E8;
+  --input-background: #E0D5E8;
+  --switch-background: #A890B8;
+  --sidebar: #E8DDF0;
+  --sidebar-accent: #E0D5E8;
+  --sidebar-border: rgba(50, 20, 60, 0.12);
+  --border: rgba(50, 20, 60, 0.12);
+  --geo-tone-a: #8F79BE;
+  --geo-tone-b: #B09AD4;
+  --geo-tone-c: #A689C9;
+}
+.dark[data-bg-preset="plum"] {
+  --card: rgba(38, 20, 48, 0.65);
+  --secondary: rgba(50, 28, 65, 0.55);
+  --muted: rgba(50, 28, 65, 0.55);
+  --input-background: rgba(22, 12, 30, 0.6);
+  --switch-background: #2A1440;
+  --sidebar: rgba(24, 14, 32, 0.7);
+  --sidebar-accent: rgba(50, 28, 65, 0.55);
+  --sidebar-border: rgba(160, 80, 200, 0.12);
+  --border: rgba(160, 80, 200, 0.15);
+  --popover: #261838;
+  --geo-tone-a: #8F70D8;
+  --geo-tone-b: #6A4FB4;
+  --geo-tone-c: #BA7AD6;
+}
+/* Midnight */
+[data-bg-preset="midnight"] {
+  --secondary: #E4E4E4;
+  --muted: #DCDCDC;
+  --input-background: #DCDCDC;
+  --switch-background: #A0A0A0;
+  --sidebar: #E4E4E4;
+  --sidebar-accent: #DCDCDC;
+  --sidebar-border: rgba(0, 0, 0, 0.12);
+  --border: rgba(0, 0, 0, 0.12);
+  --geo-tone-a: #778090;
+  --geo-tone-b: #9EA4B1;
+  --geo-tone-c: #8F95A2;
+}
+.dark[data-bg-preset="midnight"] {
+  --card: rgba(28, 28, 28, 0.65);
+  --secondary: rgba(40, 40, 40, 0.55);
+  --muted: rgba(40, 40, 40, 0.55);
+  --input-background: rgba(18, 18, 18, 0.6);
+  --switch-background: #282828;
+  --sidebar: rgba(20, 20, 20, 0.7);
+  --sidebar-accent: rgba(40, 40, 40, 0.55);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
+  --popover: #1A1A1A;
+  --geo-tone-a: #6E7892;
+  --geo-tone-b: #4D5668;
+  --geo-tone-c: #8B93A9;
+}
+/* Ocean */
+[data-bg-preset="ocean"] {
+  --secondary: #DCE6F0;
+  --muted: #D4DEE8;
+  --input-background: #D4DEE8;
+  --switch-background: #8AA0B8;
+  --sidebar: #DCE6F0;
+  --sidebar-accent: #D4DEE8;
+  --sidebar-border: rgba(10, 30, 60, 0.12);
+  --border: rgba(10, 30, 60, 0.12);
+  --geo-tone-a: #6690C2;
+  --geo-tone-b: #93B6D9;
+  --geo-tone-c: #74AFCF;
+}
+.dark[data-bg-preset="ocean"] {
+  --card: rgba(16, 28, 42, 0.65);
+  --secondary: rgba(22, 38, 56, 0.55);
+  --muted: rgba(22, 38, 56, 0.55);
+  --input-background: rgba(8, 16, 28, 0.6);
+  --switch-background: #0E1E30;
+  --sidebar: rgba(10, 18, 30, 0.7);
+  --sidebar-accent: rgba(22, 38, 56, 0.55);
+  --sidebar-border: rgba(60, 140, 220, 0.12);
+  --border: rgba(60, 140, 220, 0.15);
+  --popover: #0E1E30;
+  --geo-tone-a: #5D9DE0;
+  --geo-tone-b: #3E6EB8;
+  --geo-tone-c: #43B2CE;
+}
+
+/* Rose */
+[data-bg-preset="rose"] {
+  --secondary: #ECDDE4;
+  --muted: #E4D5DC;
+  --input-background: #E4D5DC;
+  --switch-background: #B898A8;
+  --sidebar: #ECDDE4;
+  --sidebar-accent: #E4D5DC;
+  --sidebar-border: rgba(60, 20, 40, 0.12);
+  --border: rgba(60, 20, 40, 0.12);
+  --geo-tone-a: #BC8CA9;
+  --geo-tone-b: #D2AAC4;
+  --geo-tone-c: #CA9D8A;
+}
+.dark[data-bg-preset="rose"] {
+  --card: rgba(48, 18, 30, 0.65);
+  --secondary: rgba(65, 25, 42, 0.55);
+  --muted: rgba(65, 25, 42, 0.55);
+  --input-background: rgba(30, 10, 18, 0.6);
+  --switch-background: #301420;
+  --sidebar: rgba(32, 12, 20, 0.7);
+  --sidebar-accent: rgba(65, 25, 42, 0.55);
+  --sidebar-border: rgba(200, 80, 140, 0.12);
+  --border: rgba(200, 80, 140, 0.15);
+  --popover: #2A1420;
+  --geo-tone-a: #C37AA9;
+  --geo-tone-b: #8E5F95;
+  --geo-tone-c: #D98B86;
+}
+/* Amber */
+[data-bg-preset="amber"] {
+  --secondary: #EDE6D0;
+  --muted: #E5DEC8;
+  --input-background: #E5DEC8;
+  --switch-background: #B8A880;
+  --sidebar: #EDE6D0;
+  --sidebar-accent: #E5DEC8;
+  --sidebar-border: rgba(60, 40, 10, 0.12);
+  --border: rgba(60, 40, 10, 0.12);
+  --geo-tone-a: #B98F64;
+  --geo-tone-b: #D1B291;
+  --geo-tone-c: #D89F62;
+}
+.dark[data-bg-preset="amber"] {
+  --card: rgba(42, 32, 12, 0.65);
+  --secondary: rgba(55, 42, 18, 0.55);
+  --muted: rgba(55, 42, 18, 0.55);
+  --input-background: rgba(24, 16, 6, 0.6);
+  --switch-background: #2A1C08;
+  --sidebar: rgba(26, 18, 8, 0.7);
+  --sidebar-accent: rgba(55, 42, 18, 0.55);
+  --sidebar-border: rgba(200, 160, 60, 0.12);
+  --border: rgba(200, 160, 60, 0.15);
+  --popover: #241A0A;
+  --geo-tone-a: #D69A52;
+  --geo-tone-b: #9F6D3E;
+  --geo-tone-c: #E3AC6A;
+}
+/* Teal */
+[data-bg-preset="teal"] {
+  --secondary: #D8EAE8;
+  --muted: #D0E2E0;
+  --input-background: #D0E2E0;
+  --switch-background: #88B0A8;
+  --sidebar: #D8EAE8;
+  --sidebar-accent: #D0E2E0;
+  --sidebar-border: rgba(10, 50, 45, 0.12);
+  --border: rgba(10, 50, 45, 0.12);
+  --geo-tone-a: #629F9B;
+  --geo-tone-b: #90C2BD;
+  --geo-tone-c: #67B4A6;
+}
+.dark[data-bg-preset="teal"] {
+  --card: rgba(14, 36, 32, 0.65);
+  --secondary: rgba(20, 48, 44, 0.55);
+  --muted: rgba(20, 48, 44, 0.55);
+  --input-background: rgba(8, 20, 18, 0.6);
+  --switch-background: #0C2422;
+  --sidebar: rgba(10, 22, 20, 0.7);
+  --sidebar-accent: rgba(20, 48, 44, 0.55);
+  --sidebar-border: rgba(60, 180, 160, 0.12);
+  --border: rgba(60, 180, 160, 0.15);
+  --popover: #0E2420;
+  --geo-tone-a: #47B2AD;
+  --geo-tone-b: #2D7B79;
+  --geo-tone-c: #6EC8BC;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-subtle: var(--subtle);
+  --color-accent-bg: var(--accent-bg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-purple: var(--purple);
+  --color-purple-bg: var(--purple-bg);
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+
+  html {
+    overflow-x: hidden;
+    font-size: var(--font-size);
+    -webkit-text-size-adjust: 100%;
+    width: 100%;
+    min-height: 100%;
+    background-color: var(--background);
+  }
+
+  html.dark {
+    background: var(--dark-gradient);
+    background-attachment: fixed;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    font-family: 'Noto Sans TC', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    /* SAFARI FIX: overflow-x: hidden REMOVED — it creates a compositing
+       boundary that blocks backdrop-filter in WebKit/Safari.
+       html { overflow-x: hidden } handles viewport overflow instead. */
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100dvh;
+  }
+
+  .dark body {
+    background: transparent;
+  }
+
+  #root {
+    /* SAFARI FIX: overflow-x: clip REMOVED — even "clip" creates a
+       compositing boundary in WebKit that blocks backdrop-filter from
+       seeing through to the geo-bg pseudo-elements.
+       html { overflow-x: hidden } handles viewport overflow instead. */
+    width: 100%;
+    max-width: 100vw;
+    min-height: 100dvh;
+    position: relative;
+    z-index: 0;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    body,
+    #root {
+      min-height: -webkit-fill-available;
+    }
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important; /* Prevent iOS Safari zoom on focus */
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+
+  /* Radix Theme wrapper should not break layout or add its own bg */
+  .radix-themes {
+    min-height: 100vh;
+    background: transparent !important;
+  }
+
+  /* Mobile safe area utilities */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* ── Geo-bg fallback: make --card translucent so even if the explicit
+     glass !important rules fail on Safari, Tailwind's .bg-card utility
+     still uses a translucent value instead of opaque #FFFFFF / #25283E.
+     Only --card is overridden; --popover/--sidebar keep preset values.
+   ─────────────────────────────────────────────────────────────────────── */
+.geo-bg {
+  --card: rgba(255, 255, 255, 0.16);
+}
+.geo-bg.dark,
+.geo-bg.dark-theme {
+  --card: rgba(30, 32, 48, 0.36);
+}
+
+/* ── Global Glass Panels (iPhone-style frosted glass) ─────────────────
+     IMPORTANT: These rules MUST live outside @layer base.
+     Tailwind CSS v4 strips backdrop-filter properties inside @layer base.
+
+     SAFARI FIX: ALL values here use hardcoded rgba() — NO CSS variables,
+     NO color-mix(), NO nested functions. Safari silently fails on:
+     1. CSS variables inside -webkit-backdrop-filter
+     2. Nested color-mix() (e.g. color-mix(…color-mix(…)…))
+     3. color-mix() with CSS variable arguments
+     When any of these fail, Safari discards the entire declaration,
+     and Tailwind's .bg-card{background-color:var(--card)} takes over
+     with an opaque color that hides the backdrop-filter blur.
+
+     !important overrides Tailwind's @layer utilities class.
+     transform:translateZ(0) forces Safari GPU compositing layer.
+   ─────────────────────────────────────────────────────────────────────── */
+.geo-bg .bg-card,
+.geo-bg .bg-popover,
+.geo-bg .bg-sidebar {
+  -webkit-backdrop-filter: blur(48px) saturate(200%) !important;
+  backdrop-filter: blur(48px) saturate(200%) !important;
+  transform: translateZ(0);
+}
+
+/* Light mode glass panels */
+.geo-bg .bg-card,
+.geo-bg .bg-popover {
+  /* rgba(255,255,255,0.16) = --panel-surface-light */
+  background-color: rgba(255, 255, 255, 0.16) !important;
+  background-image: linear-gradient(
+    158deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.04) 52%,
+    rgba(152, 101, 63, 0.04) 100%
+  ) !important;
+  /* rgba(255,255,255,0.24) = --panel-border-light */
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 8px 20px rgba(8, 12, 28, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.geo-bg .bg-sidebar {
+  -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
+  backdrop-filter: blur(40px) saturate(190%) !important;
+  /* 48% of rgba(255,255,255,0.16) ≈ rgba(255,255,255,0.077) */
+  background-color: rgba(255, 255, 255, 0.077) !important;
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+/* Dark mode glass panels — ~35% opaque so geometric BG shows through */
+html.geo-bg.dark .bg-card,
+html.geo-bg.dark .bg-popover,
+html.dark-theme.geo-bg .bg-card,
+html.dark-theme.geo-bg .bg-popover {
+  background-color: rgba(30, 32, 48, 0.36) !important;
+  background-image: linear-gradient(
+    138deg,
+    rgba(152, 101, 63, 0.08) 0%,
+    rgba(94, 70, 62, 0.05) 55%,
+    rgba(37, 40, 62, 0.06) 100%
+  ) !important;
+  border-color: rgba(120, 100, 80, 0.22);
+  box-shadow:
+    0 10px 24px rgba(4, 8, 20, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html.geo-bg.dark .bg-sidebar,
+html.dark-theme.geo-bg .bg-sidebar {
+  background-color: rgba(30, 32, 48, 0.22) !important;
+  border-color: rgba(120, 100, 80, 0.18);
+}
+
+/* ── Geometric Background for Translucent mode ───────────────────────── */
+.geo-bg #root::before {
+  content: '';
+  position: fixed;
+  inset: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--geo-before-opacity);
+  filter: saturate(0.88);
+  background:
+    conic-gradient(
+      from 208deg at 10% 84%,
+      transparent 0deg 22deg,
+      var(--geo-fill-1) 22deg 76deg,
+      transparent 76deg 360deg
+    ),
+    conic-gradient(
+      from 24deg at 82% 12%,
+      transparent 0deg 18deg,
+      var(--geo-fill-2) 18deg 88deg,
+      transparent 88deg 360deg
+    ),
+    conic-gradient(
+      from 150deg at 48% 40%,
+      transparent 0deg 12deg,
+      var(--geo-fill-3) 12deg 50deg,
+      transparent 50deg 360deg
+    ),
+    radial-gradient(ellipse 78% 54% at 18% 88%, var(--geo-radial), transparent 68%);
+}
+
+.geo-bg #root::after {
+  content: '';
+  position: fixed;
+  inset: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--geo-after-opacity);
+  background:
+    conic-gradient(
+      from 332deg at 8% 18%,
+      transparent 0deg 12deg,
+      var(--geo-accent-2) 12deg 46deg,
+      transparent 46deg 360deg
+    ),
+    conic-gradient(
+      from 146deg at 92% 90%,
+      transparent 0deg 24deg,
+      var(--geo-accent-1) 24deg 68deg,
+      transparent 68deg 360deg
+    );
+}
+
+/* ── Custom Accent Color Override ─────────────────────────────────────── */
+.custom-accent .radix-themes {
+  --accent-9: var(--custom-accent);
+  --accent-10: color-mix(in srgb, var(--custom-accent) 85%, black);
+  --accent-a3: color-mix(in srgb, var(--custom-accent) 18%, transparent);
+  --accent-a4: color-mix(in srgb, var(--custom-accent) 28%, transparent);
+  --accent-indicator: var(--custom-accent);
+}
+
+/* ── Neumorphism system ──────────────────────────────────────────────── */
+:root {
+  --neu-bg: var(--sidebar);
+  --neu-light: rgba(255, 255, 255, 0.7);
+  --neu-dark: rgba(0, 0, 0, 0.15);
+  --neu-inset-light: rgba(255, 255, 255, 0.4);
+  --neu-inset-dark: rgba(0, 0, 0, 0.12);
+  --neu-radius: 14px;
+}
+
+.dark,
+.dark-theme {
+  --neu-light: rgba(255, 255, 255, 0.06);
+  --neu-dark: rgba(0, 0, 0, 0.4);
+  --neu-inset-light: rgba(255, 255, 255, 0.04);
+  --neu-inset-dark: rgba(0, 0, 0, 0.35);
+}
+
+/* Raised neumorphic surface (default resting state) */
+.neu-raised {
+  border-radius: var(--neu-radius);
+  box-shadow:
+    3px 3px 8px var(--neu-dark),
+    -2px -2px 6px var(--neu-light);
+  border: 1px solid color-mix(in srgb, var(--neu-light) 50%, transparent);
+  transition: box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Pressed neumorphic surface (active/tapped state) */
+.neu-pressed {
+  border-radius: var(--neu-radius);
+  box-shadow:
+    inset 2px 2px 5px var(--neu-inset-dark),
+    inset -1px -1px 4px var(--neu-inset-light);
+  border: 1px solid color-mix(in srgb, var(--neu-dark) 20%, transparent);
+}
+
+/* Flat neumorphic surface (active tab - subtle inset) */
+.neu-flat {
+  border-radius: var(--neu-radius);
+  box-shadow:
+    inset 1px 1px 3px var(--neu-inset-dark),
+    inset -1px -1px 2px var(--neu-inset-light);
+  border: 1px solid color-mix(in srgb, var(--neu-light) 30%, transparent);
+}
+
+/* Bottom nav neumorphic bar — layered on top of glass panel */
+.neu-nav-bar {
+  box-shadow:
+    0 -4px 16px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 var(--neu-light);
+  /* Ensure backdrop-filter from .bg-sidebar glass is NOT blocked */
+  backdrop-filter: blur(var(--sidebar-blur, 36px)) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%); /* Safari: CSS vars silently fail */
+}
+
+.dark .neu-nav-bar,
+.dark-theme .neu-nav-bar {
+  box-shadow:
+    0 -4px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Bottom nav tab - interactive neumorphic element */
+.neu-tab {
+  border-radius: var(--neu-radius);
+  position: relative;
+  transition: box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.neu-tab:not(.neu-tab-active) {
+  box-shadow:
+    2px 2px 6px var(--neu-dark),
+    -1px -1px 4px var(--neu-light);
+  border: 1px solid color-mix(in srgb, var(--neu-light) 40%, transparent);
+}
+
+.neu-tab:not(.neu-tab-active):active {
+  box-shadow:
+    inset 2px 2px 4px var(--neu-inset-dark),
+    inset -1px -1px 3px var(--neu-inset-light);
+  transform: scale(0.96);
+}
+
+.neu-tab-active {
+  box-shadow:
+    inset 2px 2px 5px var(--neu-inset-dark),
+    inset -1px -1px 3px var(--neu-inset-light);
+  border: 1px solid color-mix(in srgb, var(--neu-dark) 16%, transparent);
+}
+
+/* General neumorphic press feedback for buttons/cards */
+.neu-press {
+  transition: box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow:
+    3px 3px 8px var(--neu-dark),
+    -2px -2px 6px var(--neu-light);
+}
+.neu-press:active {
+  box-shadow:
+    inset 2px 2px 4px var(--neu-inset-dark),
+    inset -1px -1px 3px var(--neu-inset-light);
+  transform: scale(0.97);
+}
+
+/* ── Motion tuning: smoother press feedback + less jumpy tap scale ─────── */
+:where(button, [role="button"], a) {
+  transition-property: transform, background-color, border-color, color, opacity, box-shadow, filter;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.active\:scale-90:active,
+.active\:scale-95:active,
+.active\:scale-98:active {
+  --tw-scale-x: 0.985 !important;
+  --tw-scale-y: 0.985 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, [role="button"], a) {
+    transition-duration: 120ms;
+  }
+  .neu-tab:not(.neu-tab-active):active,
+  .neu-press:active {
+    transform: none;
+  }
+}
