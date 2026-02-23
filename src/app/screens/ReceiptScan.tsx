@@ -53,13 +53,29 @@ function normalizeAmount(token: string, minorDigits: number): string {
   const onlyDigits = unsigned.replace(/[^\d]/g, '');
   if (!onlyDigits) return '';
 
-  if (minorDigits === 0) {
-    return String(Number.parseInt(onlyDigits, 10));
-  }
-
+  const separatorCount = (unsigned.match(/[,.]/g) || []).length;
   const lastComma = unsigned.lastIndexOf(',');
   const lastDot = unsigned.lastIndexOf('.');
   const lastSep = Math.max(lastComma, lastDot);
+
+  if (minorDigits === 0) {
+    if (lastSep !== -1) {
+      const intPart = unsigned.slice(0, lastSep).replace(/[^\d]/g, '') || '0';
+      const fracPart = unsigned.slice(lastSep + 1).replace(/[^\d]/g, '');
+
+      // JPY/KRW style: if OCR saw ".00"/",00", drop the decimal part instead of concatenating it.
+      if (fracPart.length > 0 && fracPart.length <= 2) {
+        return String(Number.parseInt(intPart, 10));
+      }
+
+      // Single separator + 3 trailing digits is usually thousands separator (e.g. 12,345).
+      if (separatorCount === 1 && fracPart.length === 3) {
+        return String(Number.parseInt(`${intPart}${fracPart}`, 10));
+      }
+    }
+    return String(Number.parseInt(onlyDigits, 10));
+  }
+
   if (lastSep !== -1) {
     const intPart = unsigned.slice(0, lastSep).replace(/[^\d]/g, '') || '0';
     const fracPart = unsigned.slice(lastSep + 1).replace(/[^\d]/g, '');
@@ -699,7 +715,7 @@ export function ReceiptScan() {
     navigate('/app/add-expense', {
       state: {
         scanData: {
-          amount: Number(resultAmount) || 0,
+          amount: resultAmount,
           description: resultMerchant,
           category: 'food' as const,
           date: resultDate,

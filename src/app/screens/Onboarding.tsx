@@ -10,9 +10,15 @@ import { useT } from '../i18n/I18nContext';
 const MEMBER_COLORS = ['#DD843C','#C05A5A','#72A857','#5A7EC5','#C8914A','#9055A0','#5AABAB','#BD7A5A'];
 const CURRENCIES = [
   { code: 'JPY', symbol: '¥',   label: '日圓 (JPY)' },
+  { code: 'USD', symbol: '$',   label: '美元 (USD)' },
   { code: 'HKD', symbol: 'HK$', label: '港幣 (HKD)' },
   { code: 'TWD', symbol: 'NT$', label: '台幣 (TWD)' },
-  { code: 'USD', symbol: '$',   label: '美元 (USD)' },
+  { code: 'EUR', symbol: '€',   label: '歐元 (EUR)' },
+  { code: 'GBP', symbol: '£',   label: '英鎊 (GBP)' },
+  { code: 'MYR', symbol: 'RM',  label: '馬幣 (MYR)' },
+  { code: 'SGD', symbol: 'S$',  label: '新幣 (SGD)' },
+  { code: 'KRW', symbol: '₩',   label: '韓圜 (KRW)' },
+  { code: 'THB', symbol: '฿',   label: '泰銖 (THB)' },
 ];
 
 interface TempMember { id: string; name: string; color: string; initials: string; }
@@ -27,11 +33,13 @@ export function Onboarding() {
   const navigate = useNavigate();
   const { createGroup, enterDemoMode, showToast } = useApp();
   const { t, locale } = useT();
+  const preferredSymbol = typeof window !== 'undefined' ? localStorage.getItem('gcd-currency') : null;
+  const preferredCode = CURRENCIES.find((c) => c.symbol === preferredSymbol)?.code || 'JPY';
 
   const [step,         setStep]         = useState(1);
   const [gName,        setGName]        = useState('');
   const [gBudget,      setGBudget]      = useState('');
-  const [currency,     setCurrencyLocal] = useState('JPY');
+  const [currency,     setCurrencyLocal] = useState(preferredCode);
   const [memberInput,  setMemberInput]  = useState('');
   const [members,      setMembers]      = useState<TempMember[]>([]);
   const [colorIdx,     setColorIdx]     = useState(0);

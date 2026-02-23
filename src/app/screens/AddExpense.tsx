@@ -16,10 +16,16 @@ export function AddExpense() {
   const { t } = useT();
 
   const editExpense = (location.state as any)?.editExpense as Expense | undefined;
-  const scanData = (location.state as any)?.scanData as { amount: number; description: string; category: CategoryType; date: string } | undefined;
+  const scanData = (location.state as any)?.scanData as {
+    amount: string | number;
+    description: string;
+    category: CategoryType;
+    date: string;
+  } | undefined;
   const isEdit = !!editExpense;
+  const scannedAmountText = scanData?.amount !== undefined ? String(scanData.amount) : '';
 
-  const [amount,      setAmount]      = useState(editExpense ? formatAmountInput(editExpense.amount, currency) : scanData?.amount ? String(scanData.amount) : '');
+  const [amount,      setAmount]      = useState(editExpense ? formatAmountInput(editExpense.amount, currency) : scannedAmountText);
   const [description, setDescription] = useState(editExpense?.description ?? scanData?.description ?? '');
   const [category,    setCategory]    = useState<CategoryType>(editExpense?.category ?? scanData?.category ?? 'food');
   const [paidBy,      setPaidBy]      = useState(editExpense?.paidBy ?? FUND_PAYER_ID);

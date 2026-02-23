@@ -5,7 +5,23 @@ import {
 } from 'firebase/firestore';
 import { db, ensureAuth } from '../firebase';
 import { useT } from '../i18n/I18nContext';
-import { Expense, EXPENSES, MEMBERS, Member, GROUP_NAME, CURRENCY, computeBalances, computeSettlements, computeFundBalance, FUND_PAYER_ID, CONTRIBUTIONS, formatAmount, normalizeMinorAmount } from '../data/sampleData';
+import {
+  Expense,
+  EXPENSES,
+  MEMBERS,
+  Member,
+  GROUP_NAME,
+  CURRENCY,
+  canonicalCurrencySymbol,
+  getCurrencyMinorDigits,
+  computeBalances,
+  computeSettlements,
+  computeFundBalance,
+  FUND_PAYER_ID,
+  CONTRIBUTIONS,
+  formatAmount,
+  normalizeMinorAmount,
+} from '../data/sampleData';
 import type { Settlement, CategoryType, Contribution } from '../data/sampleData';
 
 interface Toast {
@@ -62,6 +78,16 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+function convertMinorByCurrencyDigits(amount: number, fromCurrency: string, toCurrency: string): number {
+  const fromDigits = getCurrencyMinorDigits(fromCurrency);
+  const toDigits = getCurrencyMinorDigits(toCurrency);
+  const delta = toDigits - fromDigits;
+  const normalized = normalizeMinorAmount(amount);
+  if (delta === 0) return normalized;
+  if (delta > 0) return normalizeMinorAmount(normalized * 10 ** delta);
+  return normalizeMinorAmount(normalized / 10 ** Math.abs(delta));
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { t } = useT();
 
@@ -74,7 +100,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Core state ─────────────────────────────────────────────────────
   // When a real groupId exists, start empty to avoid flashing demo data
   const hasStoredGroup = !!localStorage.getItem('gcd-groupId');
-  const [currency, setCurrencyLocal] = useState(hasStoredGroup ? CURRENCY : CURRENCY);
+  const preferredCurrency = canonicalCurrencySymbol(localStorage.getItem('gcd-currency') || CURRENCY);
+  const [currency, setCurrencyLocal] = useState(preferredCurrency);
   const [members, setMembers] = useState<Member[]>(hasStoredGroup ? [] : MEMBERS);
   const [expenses, setExpenses] = useState<Expense[]>(hasStoredGroup ? [] : EXPENSES);
   const [groupNameLocal, setGroupNameLocal] = useState(hasStoredGroup ? '' : GROUP_NAME);
@@ -116,14 +143,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [demoMode, groupId]);
 
-  const setCurrency = useCallback((c: string) => {
-    setCurrencyLocal(c);
+  const setCurrency = useCallback((rawCurrency: string) => {
+    const nextCurrency = canonicalCurrencySymbol(rawCurrency);
+    const prevCurrency = canonicalCurrencySymbol(currency);
+    if (nextCurrency === prevCurrency) return;
+
+    const convert = (amount: number) => convertMinorByCurrencyDigits(amount, prevCurrency, nextCurrency);
+
+    setCurrencyLocal(nextCurrency);
+    localStorage.setItem('gcd-currency', nextCurrency);
+    setExpenses((prev) => prev.map((exp) => ({ ...exp, amount: convert(exp.amount) })));
+    setContributions((prev) => prev.map((contrib) => ({ ...contrib, amount: convert(contrib.amount) })));
+    setBudget((prev) => convert(prev));
+
     if (!demoMode && groupId) {
-      updateDoc(doc(db, 'groups', groupId), { currency: c }).catch((err) =>
+      const nextBudget = convert(budget);
+      updateDoc(doc(db, 'groups', groupId), { currency: nextCurrency, budget: nextBudget }).catch((err) =>
         console.error('Failed to update currency:', err)
       );
+
+      expenses.forEach((exp) => {
+        updateDoc(doc(db, 'groups', groupId, 'expenses', exp.id), {
+          amount: convert(exp.amount),
+        }).catch((err) => console.error('Failed to convert expense amount:', err));
+      });
+
+      contributions.forEach((contrib) => {
+        updateDoc(doc(db, 'groups', groupId, 'contributions', contrib.id), {
+          amount: convert(contrib.amount),
+        }).catch((err) => console.error('Failed to convert contribution amount:', err));
+      });
     }
-  }, [demoMode, groupId]);
+  }, [budget, contributions, currency, demoMode, expenses, groupId]);
 
   const toggleNotifications = useCallback(() => {
     setNotifications(prev => {
@@ -189,7 +240,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (snap.exists()) {
         const data = snap.data();
         setGroupNameLocal(data.name || GROUP_NAME);
-        setCurrencyLocal(data.currency || CURRENCY);
+        const nextCurrency = canonicalCurrencySymbol(data.currency || CURRENCY);
+        setCurrencyLocal(nextCurrency);
+        localStorage.setItem('gcd-currency', nextCurrency);
         setBudget(data.budget || 0);
       }
     });
@@ -376,7 +429,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Set local state immediately (listeners will also update)
     setGroupNameLocal(name);
-    setCurrencyLocal(currencyVal);
+    const symbol = canonicalCurrencySymbol(currencyVal);
+    setCurrencyLocal(symbol);
+    localStorage.setItem('gcd-currency', symbol);
     setMembers(membersList);
     setExpenses([]);
     setContributions(initialContribs);
@@ -417,7 +472,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setMembers(MEMBERS);
     setExpenses(EXPENSES);
     setGroupNameLocal(GROUP_NAME);
-    setCurrencyLocal(CURRENCY);
+    setCurrencyLocal(canonicalCurrencySymbol(localStorage.getItem('gcd-currency') || CURRENCY));
     setContributions(CONTRIBUTIONS);
     setBudget(0);
   }, []);

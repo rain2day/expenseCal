@@ -79,6 +79,21 @@ export const BUDGET = 80000;
 export const GROUP_NAME = '核爆都唔割鳩';
 export const CURRENCY = '¥';
 
+const CURRENCY_CODE_TO_SYMBOL: Record<string, string> = {
+  JPY: '¥',
+  USD: '$',
+  HKD: 'HK$',
+  TWD: 'NT$',
+  EUR: '€',
+  GBP: '£',
+  MYR: 'RM',
+  SGD: 'S$',
+  KRW: '₩',
+  THB: '฿',
+  CNY: '¥',
+  RMB: '¥',
+};
+
 export const CATEGORY_CONFIG: Record<CategoryType, { iconKey: string; label: string; color: string; bg: string }> = {
   food:          { iconKey: 'Utensils',    label: '餐飲', color: '#DD843C', bg: '#3A1E08' },
   transport:     { iconKey: 'Train',       label: '交通', color: '#5A7EC5', bg: '#0E1836' },
@@ -90,6 +105,18 @@ export const CATEGORY_CONFIG: Record<CategoryType, { iconKey: string; label: str
 
 export function formatJPY(amount: number): string {
   return `¥${amount.toLocaleString()}`;
+}
+
+export function canonicalCurrencySymbol(currency: string): string {
+  const raw = String(currency || '').trim();
+  if (!raw) return CURRENCY;
+
+  if (CURRENCY_MINOR_DIGITS[raw] !== undefined) return raw;
+
+  const upper = raw.toUpperCase();
+  if (CURRENCY_CODE_TO_SYMBOL[upper]) return CURRENCY_CODE_TO_SYMBOL[upper];
+
+  return raw;
 }
 
 /** @deprecated Use formatAmount(amount, currency) instead */
@@ -111,7 +138,8 @@ const CURRENCY_MINOR_DIGITS: Record<string, number> = {
 };
 
 export function getCurrencyMinorDigits(currency: string): number {
-  return CURRENCY_MINOR_DIGITS[currency] ?? 0;
+  const symbol = canonicalCurrencySymbol(currency);
+  return CURRENCY_MINOR_DIGITS[symbol] ?? 0;
 }
 
 export function normalizeMinorAmount(value: unknown): number {
@@ -165,18 +193,19 @@ export function formatAmountInput(amountMinor: number, currency: string): string
 
 /** Currency-aware amount formatter (amount is stored in minor units) */
 export function formatAmount(amount: number, currency: string): string {
+  const symbol = canonicalCurrencySymbol(currency);
   const minor = normalizeMinorAmount(amount);
-  const digits = getCurrencyMinorDigits(currency);
+  const digits = getCurrencyMinorDigits(symbol);
   const sign = minor < 0 ? '-' : '';
   const abs = Math.abs(minor);
 
   if (digits === 0) {
-    return `${sign}${currency}${abs.toLocaleString()}`;
+    return `${sign}${symbol}${abs.toLocaleString()}`;
   }
 
   const factor = 10 ** digits;
   const major = abs / factor;
-  return `${sign}${currency}${major.toLocaleString(undefined, {
+  return `${sign}${symbol}${major.toLocaleString(undefined, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   })}`;
