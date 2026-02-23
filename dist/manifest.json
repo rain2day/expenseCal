@@ -1,0 +1,22 @@
+{
+  "name": "公數計算器",
+  "short_name": "公數計算器",
+  "description": "輕鬆計公數，朋友唔鬧交。日本旅遊分帳神器。",
+  "start_url": "/web/expenseCal/",
+  "scope": "/web/expenseCal/",
+  "display": "standalone",
+  "background_color": "#2A2C35",
+  "theme_color": "#2A2C35",
+  "icons": [
+    {
+      "src": "/web/expenseCal/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/web/expenseCal/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

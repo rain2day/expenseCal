@@ -31,6 +31,11 @@ export const router = createBrowserRouter([
   {
     path: '/app',
     Component: Layout,
+    loader: () => {
+      const gid = localStorage.getItem('gcd-groupId');
+      if (!gid) return redirect('/');
+      return null;
+    },
     children: [
       { index: true, loader: () => redirect('/app/dashboard') },
       { path: 'dashboard', Component: Dashboard },

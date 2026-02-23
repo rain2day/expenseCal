@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8913F"/>
+      <stop offset="100%" stop-color="#B86228"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square bg -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <!-- White circle -->
+  <circle cx="16" cy="15.8" r="11.2" fill="white" opacity="0.96"/>
+  <!-- ¥ symbol -->
+  <g stroke="#DD843C" stroke-linecap="round" fill="none">
+    <!-- V arms -->
+    <line x1="9.5"  y1="6.5"  x2="16" y2="17" stroke-width="3"/>
+    <line x1="22.5" y1="6.5"  x2="16" y2="17" stroke-width="3"/>
+    <!-- Stem -->
+    <line x1="16"   y1="16.5" x2="16" y2="25.5" stroke-width="3"/>
+    <!-- Crossbars -->
+    <line x1="11"   y1="19.5" x2="21" y2="19.5" stroke-width="2.2"/>
+    <line x1="11"   y1="22.5" x2="21" y2="22.5" stroke-width="2.2"/>
+  </g>
+</svg>
