@@ -3,6 +3,7 @@ import {
   ChevronRight, Moon, Sun, Bell, Globe,
   Download, FileText, Trash2, Info, MessageSquare,
   Pencil, Palette, Check, Link2, Copy,
+  Users, LogOut, Plus,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
@@ -87,6 +88,7 @@ export function Settings() {
     totalContributions,
     fmt,
     groupId, demoMode,
+    savedGroups, switchGroup, leaveCurrentGroup,
   } = useApp();
 
   const [editingName, setEditingName] = useState(false);
@@ -96,6 +98,7 @@ export function Settings() {
   const [connectId, setConnectId] = useState('');
   const [showPdfReport, setShowPdfReport] = useState(false);
   const [pdfExporting, setPdfExporting] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
   const currencies = CURRENCY_CODES.map(code => ({
@@ -409,6 +412,109 @@ export function Settings() {
           )}
         </SectionCard>
         </StaggerItem>
+
+        {/* ── My Groups ─────────────────────────────────────────────── */}
+        {!demoMode && (
+        <StaggerItem>
+        <SectionCard title={t.settings.sectionGroups}>
+          {savedGroups.length === 0 ? (
+            <div className="px-4 py-4 text-center">
+              <p className="text-xs text-subtle">{t.settings.noSavedGroups}</p>
+            </div>
+          ) : (
+            savedGroups.map(g => {
+              const isActive = g.id === groupId;
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => {
+                    if (!isActive) {
+                      switchGroup(g.id);
+                      showToast('info', t.settings.switchedGroup);
+                    }
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors ${
+                    isActive ? 'bg-accent-bg' : 'hover:bg-secondary active:bg-secondary'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${
+                    isActive ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground'
+                  }`}>
+                    {g.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm truncate ${isActive ? 'text-primary font-bold' : 'text-foreground'}`}>
+                      {g.name}
+                    </p>
+                    <p className="text-[10px] text-subtle font-mono truncate">{g.id.slice(0, 12)}…</p>
+                  </div>
+                  {isActive && (
+                    <span className="text-[10px] text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-full flex-shrink-0">
+                      {t.settings.currentGroup}
+                    </span>
+                  )}
+                  {!isActive && (
+                    <ChevronRight size={14} className="text-subtle flex-shrink-0" strokeWidth={2} />
+                  )}
+                </button>
+              );
+            })
+          )}
+          {/* Create / Join shortcuts */}
+          <div className="flex gap-2 px-4 py-3">
+            <button
+              onClick={() => {
+                const base = import.meta.env.BASE_URL || '/';
+                window.location.href = base + (base.endsWith('/') ? '' : '/') + '?new=1';
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-secondary hover:bg-secondary/80 rounded-xl text-xs text-muted-foreground font-bold transition-colors active:scale-95"
+            >
+              <Plus size={13} strokeWidth={2.5} /> {t.settings.createNewGroup}
+            </button>
+            <button
+              onClick={() => {
+                const base = import.meta.env.BASE_URL || '/';
+                window.location.href = base + (base.endsWith('/') ? '' : '/') + '?new=1';
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-secondary hover:bg-secondary/80 rounded-xl text-xs text-muted-foreground font-bold transition-colors active:scale-95"
+            >
+              <Users size={13} strokeWidth={2} /> {t.settings.joinGroupBtn}
+            </button>
+          </div>
+          {/* Leave current group */}
+          {groupId && (
+            confirmLeave ? (
+              <div className="flex items-center gap-3 px-4 py-3.5">
+                <span className="text-muted-foreground w-4 flex-shrink-0"><LogOut size={14} className="text-destructive" strokeWidth={2} /></span>
+                <span className="flex-1 text-xs text-destructive">{t.settings.confirmLeave}</span>
+                <button
+                  onClick={() => {
+                    leaveCurrentGroup();
+                    showToast('success', t.settings.leftGroup);
+                  }}
+                  className="px-3 py-1.5 bg-destructive text-white text-xs font-bold rounded-lg active:scale-95 transition-transform"
+                >
+                  {t.common.confirm}
+                </button>
+                <button
+                  onClick={() => setConfirmLeave(false)}
+                  className="px-3 py-1.5 bg-secondary text-muted-foreground text-xs font-bold rounded-lg active:scale-95 transition-transform"
+                >
+                  {t.common.cancel}
+                </button>
+              </div>
+            ) : (
+              <SettingItem
+                label={t.settings.leaveGroup}
+                icon={<LogOut size={14} className="text-destructive" strokeWidth={2} />}
+                danger={true}
+                onClick={() => setConfirmLeave(true)}
+              />
+            )
+          )}
+        </SectionCard>
+        </StaggerItem>
+        )}
 
         {/* ── About ────────────────────────────────────────────────── */}
         <StaggerItem>

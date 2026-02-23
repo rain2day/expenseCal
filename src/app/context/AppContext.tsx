@@ -74,6 +74,10 @@ interface AppContextValue {
   markAllRead: () => void;
   notifications: boolean;
   toggleNotifications: () => void;
+  // Group switching
+  savedGroups: Array<{ id: string; name: string }>;
+  switchGroup: (gid: string) => void;
+  leaveCurrentGroup: () => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -111,6 +115,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState(() => {
     const stored = localStorage.getItem('gcd-notifications');
     return stored !== null ? stored === 'true' : true;
+  });
+
+  // ── Saved groups (multi-group support) ────────────────────────────
+  const [savedGroups, setSavedGroups] = useState<Array<{ id: string; name: string }>>(() => {
+    try {
+      const raw = localStorage.getItem('gcd-groups');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
   });
 
   // ── Firebase / group state ─────────────────────────────────────────
@@ -210,6 +222,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLastSeen(now);
     localStorage.setItem('gcd-lastSeen', now);
   }, []);
+
+  // Auto-save current group to saved list when we know its name
+  useEffect(() => {
+    if (groupId && groupNameLocal && !demoMode) {
+      setSavedGroups(prev => {
+        const existing = prev.find(g => g.id === groupId);
+        let next: typeof prev;
+        if (existing) {
+          // Update name if changed
+          if (existing.name !== groupNameLocal) {
+            next = prev.map(g => g.id === groupId ? { ...g, name: groupNameLocal } : g);
+          } else {
+            return prev; // no change
+          }
+        } else {
+          next = [...prev, { id: groupId, name: groupNameLocal }];
+        }
+        localStorage.setItem('gcd-groups', JSON.stringify(next));
+        return next;
+      });
+    }
+  }, [groupId, groupNameLocal, demoMode]);
+
+  // ── switchGroup ──────────────────────────────────────────────────
+  const switchGroup = useCallback((gid: string) => {
+    localStorage.setItem('gcd-groupId', gid);
+    window.location.reload();
+  }, []);
+
+  // ── leaveCurrentGroup ────────────────────────────────────────────
+  const leaveCurrentGroup = useCallback(() => {
+    if (!groupId) return;
+
+    // Remove from saved groups
+    const updated = savedGroups.filter(g => g.id !== groupId);
+    localStorage.setItem('gcd-groups', JSON.stringify(updated));
+
+    // Clean up listeners
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+
+    // If there's another saved group, switch to it
+    if (updated.length > 0) {
+      localStorage.setItem('gcd-groupId', updated[0].id);
+      window.location.reload();
+    } else {
+      // No more groups — go to onboarding
+      localStorage.removeItem('gcd-groupId');
+      window.location.href = import.meta.env.BASE_URL || '/';
+    }
+  }, [groupId, savedGroups]);
 
   // ── Dark mode side effect ──────────────────────────────────────────
   useEffect(() => {
@@ -654,6 +719,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       getMember, fmt,
       unreadCount, markAllRead,
       notifications, toggleNotifications,
+      savedGroups, switchGroup, leaveCurrentGroup,
     }}>
       {children}
     </AppContext.Provider>

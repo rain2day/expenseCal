@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, X, Check, Link2, ChevronLeft, Eye } from 'lucide-react';
+import { ArrowRight, X, Check, Link2, ChevronLeft, Eye, ArrowLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useApp } from '../context/AppContext';
 import { getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
@@ -31,8 +31,10 @@ function getInitials(name: string) {
 
 export function Onboarding() {
   const navigate = useNavigate();
-  const { createGroup, enterDemoMode, showToast } = useApp();
+  const { createGroup, enterDemoMode, showToast, groupId } = useApp();
   const { t, locale } = useT();
+  const [searchParams] = useSearchParams();
+  const isNewGroupFlow = searchParams.has('new') && !!groupId;
   const preferredSymbol = typeof window !== 'undefined' ? localStorage.getItem('gcd-currency') : null;
   const preferredCode = CURRENCIES.find((c) => c.symbol === preferredSymbol)?.code || 'JPY';
 
@@ -184,16 +186,25 @@ export function Onboarding() {
                 </button>
               )}
               <div className="mt-2 pt-3 border-t border-border">
-                <button
-                  onClick={() => {
-                    enterDemoMode();
-                    showToast('info', t.onboarding.demoLoaded);
-                    navigate('/app/dashboard');
-                  }}
-                  className="w-full text-subtle text-xs py-1.5 flex items-center justify-center gap-1.5 active:opacity-70"
-                >
-                  <Eye size={13} strokeWidth={2} /> {t.onboarding.demoMode}
-                </button>
+                {isNewGroupFlow ? (
+                  <button
+                    onClick={() => navigate('/app/dashboard')}
+                    className="w-full text-subtle text-xs py-1.5 flex items-center justify-center gap-1.5 active:opacity-70"
+                  >
+                    <ArrowLeft size={13} strokeWidth={2} /> {t.onboarding.backToGroup}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      enterDemoMode();
+                      showToast('info', t.onboarding.demoLoaded);
+                      navigate('/app/dashboard');
+                    }}
+                    className="w-full text-subtle text-xs py-1.5 flex items-center justify-center gap-1.5 active:opacity-70"
+                  >
+                    <Eye size={13} strokeWidth={2} /> {t.onboarding.demoMode}
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

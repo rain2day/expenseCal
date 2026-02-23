@@ -18,9 +18,11 @@ export const router = createBrowserRouter([
   {
     path: '/',
     Component: Onboarding,
-    loader: () => {
+    loader: ({ request }) => {
       const gid = localStorage.getItem('gcd-groupId');
-      if (gid) return redirect('/app/dashboard');
+      const url = new URL(request.url);
+      // Allow access when creating/joining a new group from Settings (?new=1)
+      if (gid && !url.searchParams.has('new')) return redirect('/app/dashboard');
       return null;
     },
   },

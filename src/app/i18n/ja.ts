@@ -260,6 +260,16 @@ export const ja: Translations = {
     // Language labels
     langZh: '繁体字中国語',
     langJa: '日本語',
+    // Group switching
+    sectionGroups: 'マイグループ',
+    currentGroup: '使用中',
+    createNewGroup: '新しいグループを作成',
+    joinGroupBtn: 'グループに参加',
+    leaveGroup: 'グループを退出',
+    confirmLeave: 'このグループから退出しますか？いつでも再参加できます。',
+    leftGroup: 'グループを退出しました',
+    switchedGroup: 'グループを切り替えました',
+    noSavedGroups: '保存されたグループはありません',
   },
   onboarding: {
     appName: '割り勘計算',
@@ -293,6 +303,7 @@ export const ja: Translations = {
     budgetFormatError: '有効な金額を入力してください',
     linkCopied: '招待リンクをコピーしました',
     copyFailed: 'コピーに失敗しました',
+    backToGroup: '現在のグループに戻る',
   },
   joinGroup: {
     notFound: 'グループが見つかりません',

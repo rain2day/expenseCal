@@ -257,6 +257,16 @@ export interface Translations {
     // Language labels
     langZh: string;
     langJa: string;
+    // Group switching
+    sectionGroups: string;
+    currentGroup: string;
+    createNewGroup: string;
+    joinGroupBtn: string;
+    leaveGroup: string;
+    confirmLeave: string;
+    leftGroup: string;
+    switchedGroup: string;
+    noSavedGroups: string;
   };
   onboarding: {
     appName: string;
@@ -290,6 +300,7 @@ export interface Translations {
     budgetFormatError: string;
     linkCopied: string;
     copyFailed: string;
+    backToGroup: string;
   };
   joinGroup: {
     notFound: string;

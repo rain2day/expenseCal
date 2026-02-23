@@ -260,6 +260,16 @@ export const zh: Translations = {
     // Language labels
     langZh: '繁體中文',
     langJa: '日本語',
+    // Group switching
+    sectionGroups: '我的群組',
+    currentGroup: '使用中',
+    createNewGroup: '建立新群組',
+    joinGroupBtn: '加入群組',
+    leaveGroup: '退出群組',
+    confirmLeave: '確定退出此群組？退出後可隨時重新加入。',
+    leftGroup: '已退出群組',
+    switchedGroup: '已切換群組',
+    noSavedGroups: '沒有已儲存的群組',
   },
   onboarding: {
     appName: '公數計算器',
@@ -293,6 +303,7 @@ export const zh: Translations = {
     budgetFormatError: '請輸入有效金額',
     linkCopied: '已複製邀請連結',
     copyFailed: '複製失敗',
+    backToGroup: '返回目前群組',
   },
   joinGroup: {
     notFound: '找不到群組',
