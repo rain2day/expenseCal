@@ -328,7 +328,7 @@ export function Onboarding() {
 
               <button
                 onClick={handleNext}
-                disabled={members.length === 0 || isCreating}
+                disabled={isCreating}
                 className="w-full bg-primary disabled:opacity-40 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
                 {isCreating ? (
