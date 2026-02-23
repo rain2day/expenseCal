@@ -9,6 +9,7 @@ import Tesseract from 'tesseract.js';
 
 type ScanTab = 'scan' | 'upload';
 type ScanState = 'idle' | 'scanning' | 'result';
+type UiLocale = 'zh' | 'ja';
 
 type ParsedReceipt = { amount: string; merchant: string; date: string; score: number };
 type AmountCandidate = { amount: string; value: number; score: number };
@@ -163,6 +164,53 @@ function parseReceipt(text: string, currency: string): ParsedReceipt {
   return { amount, merchant, date, score };
 }
 
+function computeAdaptiveBinary(
+  gray: Uint8ClampedArray,
+  width: number,
+  height: number,
+  tileSize = 28,
+): Uint8ClampedArray {
+  const tilesX = Math.ceil(width / tileSize);
+  const tilesY = Math.ceil(height / tileSize);
+  const tileSums = new Float64Array(tilesX * tilesY);
+  const tileCounts = new Uint32Array(tilesX * tilesY);
+
+  for (let y = 0; y < height; y += 1) {
+    const ty = Math.floor(y / tileSize);
+    for (let x = 0; x < width; x += 1) {
+      const tx = Math.floor(x / tileSize);
+      const tileIndex = ty * tilesX + tx;
+      const px = (y * width + x) * 4;
+      tileSums[tileIndex] += gray[px];
+      tileCounts[tileIndex] += 1;
+    }
+  }
+
+  const tileMeans = new Float64Array(tilesX * tilesY);
+  for (let i = 0; i < tileMeans.length; i += 1) {
+    const count = tileCounts[i] || 1;
+    tileMeans[i] = tileSums[i] / count;
+  }
+
+  const out = new Uint8ClampedArray(gray.length);
+  for (let y = 0; y < height; y += 1) {
+    const ty = Math.floor(y / tileSize);
+    for (let x = 0; x < width; x += 1) {
+      const tx = Math.floor(x / tileSize);
+      const tileIndex = ty * tilesX + tx;
+      const px = (y * width + x) * 4;
+      const localMean = tileMeans[tileIndex];
+      const threshold = Math.max(88, Math.min(210, Math.round(localMean * 0.9)));
+      const pixel = gray[px] >= threshold ? 255 : 0;
+      out[px] = pixel;
+      out[px + 1] = pixel;
+      out[px + 2] = pixel;
+      out[px + 3] = 255;
+    }
+  }
+  return out;
+}
+
 async function preprocessImageVariants(imageSource: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -216,7 +264,12 @@ async function preprocessImageVariants(imageSource: string): Promise<string[]> {
       ctx.putImageData(binaryImage, 0, 0);
       const binaryDataUrl = canvas.toDataURL('image/png');
 
-      resolve([enhancedDataUrl, binaryDataUrl]);
+      const adaptive = computeAdaptiveBinary(enhanced, width, height);
+      const adaptiveImage = new ImageData(adaptive, width, height);
+      ctx.putImageData(adaptiveImage, 0, 0);
+      const adaptiveDataUrl = canvas.toDataURL('image/png');
+
+      resolve([enhancedDataUrl, binaryDataUrl, adaptiveDataUrl]);
     };
     img.onerror = () => reject(new Error('Failed to load image'));
     img.src = imageSource;
@@ -252,14 +305,92 @@ async function centerCropVariant(
   });
 }
 
-async function rotateVariant(imageSource: string, degree: 90 | 180 | 270): Promise<string | null> {
+async function smartReceiptCropVariant(imageSource: string): Promise<string | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
-      const rad = (degree * Math.PI) / 180;
-      const swap = degree === 90 || degree === 270;
-      const outW = swap ? img.height : img.width;
-      const outH = swap ? img.width : img.height;
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) {
+        resolve(null);
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+
+      let sumLum = 0;
+      const total = img.width * img.height;
+      for (let i = 0; i < imageData.length; i += 4) {
+        sumLum += 0.299 * imageData[i] + 0.587 * imageData[i + 1] + 0.114 * imageData[i + 2];
+      }
+      const avgLum = sumLum / Math.max(1, total);
+      const brightThreshold = Math.min(250, avgLum + 20);
+
+      let minX = img.width;
+      let minY = img.height;
+      let maxX = 0;
+      let maxY = 0;
+      let brightCount = 0;
+
+      for (let y = 0; y < img.height; y += 1) {
+        for (let x = 0; x < img.width; x += 1) {
+          const idx = (y * img.width + x) * 4;
+          const lum = 0.299 * imageData[idx] + 0.587 * imageData[idx + 1] + 0.114 * imageData[idx + 2];
+          if (lum >= brightThreshold) {
+            brightCount += 1;
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (brightCount < total * 0.1 || maxX <= minX || maxY <= minY) {
+        resolve(null);
+        return;
+      }
+
+      const marginX = Math.round((maxX - minX) * 0.06);
+      const marginY = Math.round((maxY - minY) * 0.06);
+      const sx = Math.max(0, minX - marginX);
+      const sy = Math.max(0, minY - marginY);
+      const sw = Math.min(img.width - sx, maxX - minX + marginX * 2);
+      const sh = Math.min(img.height - sy, maxY - minY + marginY * 2);
+
+      if (sw < img.width * 0.45 || sh < img.height * 0.45) {
+        resolve(null);
+        return;
+      }
+
+      const cropCanvas = document.createElement('canvas');
+      cropCanvas.width = sw;
+      cropCanvas.height = sh;
+      const cropCtx = cropCanvas.getContext('2d');
+      if (!cropCtx) {
+        resolve(null);
+        return;
+      }
+      cropCtx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      resolve(cropCanvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = imageSource;
+  });
+}
+
+async function rotateVariant(imageSource: string, degree: number): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const normalized = ((degree % 360) + 360) % 360;
+      const rad = (normalized * Math.PI) / 180;
+      const absSin = Math.abs(Math.sin(rad));
+      const absCos = Math.abs(Math.cos(rad));
+      const outW = Math.max(1, Math.round(img.width * absCos + img.height * absSin));
+      const outH = Math.max(1, Math.round(img.width * absSin + img.height * absCos));
 
       const canvas = document.createElement('canvas');
       canvas.width = outW;
@@ -283,7 +414,7 @@ async function rotateVariant(imageSource: string, degree: 90 | 180 | 270): Promi
 export function ReceiptScan() {
   const navigate = useNavigate();
   const { showToast, currency } = useApp();
-  const { t } = useT();
+  const { t, locale } = useT();
 
   const [tab, setTab] = useState<ScanTab>('scan');
   const [state, setState] = useState<ScanState>('idle');
@@ -350,18 +481,29 @@ export function ReceiptScan() {
     setScanWarning(null);
 
     let worker: Tesseract.Worker | null = null;
+    let fallbackWorker: Tesseract.Worker | null = null;
     try {
-      const [variants, centerCrop] = await Promise.all([
+      const [variants, centerCrop, smartCrop] = await Promise.all([
         preprocessImageVariants(imageSource).catch(() => []),
         centerCropVariant(imageSource),
+        smartReceiptCropVariant(imageSource),
       ]);
-      const baseTargets = [imageSource, ...variants, centerCrop].filter((s): s is string => !!s);
+      const deskewBase = smartCrop || centerCrop || variants[0] || imageSource;
+      const [deskewNeg, deskewPos] = await Promise.all([
+        rotateVariant(deskewBase, -5),
+        rotateVariant(deskewBase, 5),
+      ]);
+
+      const baseTargets = [imageSource, ...variants, centerCrop, smartCrop, deskewNeg, deskewPos]
+        .filter((s): s is string => !!s);
       const scanTargets = Array.from(new Set(baseTargets));
 
       let passCursor = 0;
       let totalPasses = Math.max(1, scanTargets.length);
+      const primaryLang = (locale as UiLocale) === 'ja' ? 'jpn+eng' : 'chi_tra+eng';
+      const secondaryLang = (locale as UiLocale) === 'ja' ? 'chi_tra+eng' : 'jpn+eng';
 
-      worker = await Tesseract.createWorker('eng+jpn+chi_tra', undefined, {
+      worker = await Tesseract.createWorker(primaryLang, undefined, {
         logger: (m: Tesseract.LoggerMessage) => {
           if (m.status === 'recognizing text') {
             const overallProgress = ((passCursor + m.progress) / totalPasses) * 100;
@@ -398,9 +540,48 @@ export function ReceiptScan() {
       }
 
       const parsed = best?.parsed ?? { amount: '', merchant: '', date: '', score: 0 };
+      const bestConfidence = best?.confidence ?? 0;
+
+      if ((!parsed.amount || bestConfidence < 45) && secondaryLang !== primaryLang) {
+        const fallbackTargets = [smartCrop, centerCrop, variants[2], variants[1], variants[0], imageSource]
+          .filter((s): s is string => !!s);
+        if (fallbackTargets.length > 0) {
+          totalPasses += fallbackTargets.length;
+          fallbackWorker = await Tesseract.createWorker(secondaryLang, undefined, {
+            logger: (m: Tesseract.LoggerMessage) => {
+              if (m.status === 'recognizing text') {
+                const overallProgress = ((passCursor + m.progress) / totalPasses) * 100;
+                setOcrProgress(Math.max(1, Math.min(99, Math.round(overallProgress))));
+              }
+            },
+          });
+          await fallbackWorker.setParameters({
+            preserve_interword_spaces: '1',
+            user_defined_dpi: '300',
+            tessedit_pageseg_mode: '6',
+          } as Record<string, string>);
+
+          for (const target of fallbackTargets) {
+            const { data } = await fallbackWorker.recognize(target, { rotateAuto: true });
+            passCursor += 1;
+            setOcrProgress(Math.max(1, Math.min(99, Math.round((passCursor / totalPasses) * 100))));
+            const candidate = parseReceipt(data.text || '', currency);
+            const candidateWeight = candidate.score + (data.confidence ?? 0) * 0.4;
+            const bestWeight = (best?.parsed.score ?? 0) + (best?.confidence ?? 0) * 0.4;
+            if (candidateWeight > bestWeight) {
+              best = { parsed: candidate, confidence: data.confidence ?? 0 };
+              parsed.amount = candidate.amount || parsed.amount;
+              parsed.merchant = candidate.merchant || parsed.merchant;
+              parsed.date = candidate.date || parsed.date;
+              parsed.score = Math.max(parsed.score, candidate.score);
+            }
+            if (parsed.amount && parsed.score >= 75) break;
+          }
+        }
+      }
 
       if (!parsed.amount) {
-        const amountBase = variants[1] || variants[0] || centerCrop || imageSource;
+        const amountBase = variants[2] || variants[1] || variants[0] || smartCrop || centerCrop || imageSource;
         const [rot90, rot270] = await Promise.all([
           rotateVariant(amountBase, 90),
           rotateVariant(amountBase, 270),
@@ -459,6 +640,13 @@ export function ReceiptScan() {
       if (worker) {
         try {
           await worker.terminate();
+        } catch {
+          // Ignore worker cleanup errors.
+        }
+      }
+      if (fallbackWorker) {
+        try {
+          await fallbackWorker.terminate();
         } catch {
           // Ignore worker cleanup errors.
         }
