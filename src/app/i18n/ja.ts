@@ -171,6 +171,13 @@ export const ja: Translations = {
     fundOverdraft: '資金残高が不足しています',
     updatedExpense: '支出を更新しました',
     addedExpense: '支出を追加しました',
+    typeGroup: '共同費用',
+    typePersonal: '個人支出',
+    forMember: '記録する人',
+    visibility: '公開設定',
+    private: 'プライベート',
+    groupVisible: 'グループに公開',
+    addedPersonal: '個人支出を記録しました',
   },
   expenseHistory: {
     title: '支出履歴',

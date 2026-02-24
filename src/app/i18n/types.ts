@@ -168,6 +168,14 @@ export interface Translations {
     fundOverdraft: string;
     updatedExpense: string;
     addedExpense: string;
+    // Personal expense mode
+    typeGroup: string;
+    typePersonal: string;
+    forMember: string;
+    visibility: string;
+    private: string;
+    groupVisible: string;
+    addedPersonal: string;
   };
   expenseHistory: {
     title: string;

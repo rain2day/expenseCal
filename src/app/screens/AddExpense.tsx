@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { X, Calendar, Check, Wallet } from 'lucide-react';
+import { X, Calendar, Check, Wallet, Lock, Eye } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
@@ -12,7 +12,10 @@ const CATEGORIES: CategoryType[] = ['food', 'transport', 'accommodation', 'ticke
 export function AddExpense() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { members, addExpense, updateExpense, showToast, currency, fundBalance, fmt } = useApp();
+  const {
+    members, addExpense, updateExpense, addPersonalExpense,
+    showToast, currency, fundBalance, fmt,
+  } = useApp();
   const { t } = useT();
 
   const editExpense = (location.state as any)?.editExpense as Expense | undefined;
@@ -25,6 +28,13 @@ export function AddExpense() {
   const isEdit = !!editExpense;
   const scannedAmountText = scanData?.amount !== undefined ? String(scanData.amount) : '';
 
+  // Personal mode: passed via location.state from PersonalExpenses page
+  const personalModeDefault = !!(location.state as any)?.personalMode;
+  const personalMemberId = (location.state as any)?.memberId as string | undefined;
+
+  const [expenseType, setExpenseType] = useState<'group' | 'personal'>(
+    personalModeDefault ? 'personal' : 'group'
+  );
   const [amount,      setAmount]      = useState(editExpense ? formatAmountInput(editExpense.amount, currency) : scannedAmountText);
   const [description, setDescription] = useState(editExpense?.description ?? scanData?.description ?? '');
   const [category,    setCategory]    = useState<CategoryType>(editExpense?.category ?? scanData?.category ?? 'food');
@@ -32,6 +42,12 @@ export function AddExpense() {
   const [splitAmong,  setSplitAmong]  = useState<string[]>(editExpense?.splitAmong ?? members.map(m => m.id));
   const [date,        setDate]        = useState(editExpense?.date ?? scanData?.date ?? new Date().toISOString().split('T')[0]);
   const lastPayerTapRef = useRef(0);
+
+  // Personal-mode specific state
+  const [personalFor, setPersonalFor] = useState<string>(personalMemberId ?? members[0]?.id ?? '');
+  const [visibility, setVisibility] = useState<'private' | 'group'>('private');
+
+  const isPersonal = expenseType === 'personal';
 
   function toggleSplit(id: string) {
     setSplitAmong(prev =>
@@ -45,7 +61,32 @@ export function AddExpense() {
     if (Date.now() - lastPayerTapRef.current < 350) return;
 
     const amt = parseAmountInput(amount, currency);
-    if (amt === null || amt <= 0 || !description.trim() || splitAmong.length === 0) {
+    if (amt === null || amt <= 0 || !description.trim()) {
+      showToast('error', t.addExpense.errorRequired);
+      return;
+    }
+
+    if (isPersonal) {
+      // Personal expense mode
+      if (!personalFor) {
+        showToast('error', t.addExpense.errorRequired);
+        return;
+      }
+      addPersonalExpense(personalFor, {
+        id: `pe_${Date.now()}`,
+        amount: amt,
+        description: description.trim(),
+        category,
+        date,
+        visibility,
+      });
+      showToast('success', t.addExpense.addedPersonal);
+      navigate(-1);
+      return;
+    }
+
+    // Group expense mode
+    if (splitAmong.length === 0) {
       showToast('error', t.addExpense.errorRequired);
       return;
     }
@@ -114,6 +155,36 @@ export function AddExpense() {
       >
         <StaggerContainer className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
+          {/* Type toggle: group / personal (hide during edit) */}
+          {!isEdit && (
+            <StaggerItem>
+            <div className="flex gap-1 bg-secondary rounded-xl p-1">
+              <button
+                onClick={() => setExpenseType('group')}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors
+                  ${!isPersonal
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground'
+                  }`}
+              >
+                <Wallet size={14} strokeWidth={2} />
+                {t.addExpense.typeGroup}
+              </button>
+              <button
+                onClick={() => setExpenseType('personal')}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors
+                  ${isPersonal
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground'
+                  }`}
+              >
+                <Lock size={14} strokeWidth={2} />
+                {t.addExpense.typePersonal}
+              </button>
+            </div>
+            </StaggerItem>
+          )}
+
           {/* Amount */}
           <StaggerItem>
           <div className="bg-card border border-border rounded-2xl p-6 text-center">
@@ -131,7 +202,7 @@ export function AddExpense() {
                 inputMode="decimal"
               />
             </div>
-            {parsedAmount !== null && parsedAmount > 0 && splitCount > 0 && (
+            {!isPersonal && parsedAmount !== null && parsedAmount > 0 && splitCount > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
                 {perPersonRemainder === 0
                   ? t.addExpense.perPersonCalc(fmt(perPersonBase))
@@ -171,81 +242,141 @@ export function AddExpense() {
           </div>
           </StaggerItem>
 
-          {/* Paid by */}
-          <StaggerItem>
-          <div className="bg-card border border-border rounded-2xl p-4">
-            <label className="block text-xs text-muted-foreground mb-3">{t.addExpense.paidBy}</label>
-            <div className="flex gap-3 flex-wrap">
-              {/* Fund option */}
-              <div className="flex flex-col items-center gap-1">
-                <div className={`p-0.5 rounded-full transition-all ${paidBy === FUND_PAYER_ID ? 'ring-2 ring-primary ring-offset-2 ring-offset-card' : ''}`}>
+          {/* ── Group-only sections ─────────────────────────── */}
+          {!isPersonal && (
+            <>
+              {/* Paid by */}
+              <StaggerItem>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <label className="block text-xs text-muted-foreground mb-3">{t.addExpense.paidBy}</label>
+                <div className="flex gap-3 flex-wrap">
+                  {/* Fund option */}
+                  <div className="flex flex-col items-center gap-1">
+                    <div className={`p-0.5 rounded-full transition-all ${paidBy === FUND_PAYER_ID ? 'ring-2 ring-primary ring-offset-2 ring-offset-card' : ''}`}>
+                      <button
+                        onClick={() => {
+                          lastPayerTapRef.current = Date.now();
+                          setPaidBy(FUND_PAYER_ID);
+                        }}
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white select-none cursor-pointer active:scale-95 transition-transform"
+                        style={{ background: '#C8914A' }}
+                      >
+                        <Wallet size={18} strokeWidth={2} />
+                      </button>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">{t.addExpense.fundDeduct}</span>
+                    <span className={`text-[9px] tabular-nums ${fundBalance < 0 ? 'text-destructive' : 'text-subtle'}`}>{fmt(fundBalance)}</span>
+                  </div>
+                  {/* Members */}
+                  {members.map(m => (
+                    <div key={m.id} className="flex flex-col items-center gap-1">
+                      <div className={`p-0.5 rounded-full transition-all ${paidBy === m.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-card' : ''}`}>
+                        <MemberAvatar
+                          member={m}
+                          size="md"
+                          onClick={() => {
+                            lastPayerTapRef.current = Date.now();
+                            setPaidBy(m.id);
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{m.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              </StaggerItem>
+
+              {/* Split among */}
+              <StaggerItem>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-xs text-muted-foreground">{t.addExpense.participants}</label>
                   <button
-                    onClick={() => {
-                      lastPayerTapRef.current = Date.now();
-                      setPaidBy(FUND_PAYER_ID);
-                    }}
-                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white select-none cursor-pointer active:scale-95 transition-transform"
-                    style={{ background: '#C8914A' }}
+                    onClick={() => setSplitAmong(
+                      splitAmong.length === members.length ? [] : members.map(m => m.id)
+                    )}
+                    className={`text-xs px-3 py-1 rounded-full font-medium transition-all
+                      ${splitAmong.length === members.length
+                        ? 'bg-primary text-white'
+                        : 'bg-accent-bg text-primary'
+                      }`}
                   >
-                    <Wallet size={18} strokeWidth={2} />
+                    {splitAmong.length === members.length ? t.addExpense.deselectAll : t.addExpense.selectAll}
                   </button>
                 </div>
-                <span className="text-[10px] text-muted-foreground">{t.addExpense.fundDeduct}</span>
-                <span className={`text-[9px] tabular-nums ${fundBalance < 0 ? 'text-destructive' : 'text-subtle'}`}>{fmt(fundBalance)}</span>
+                <div className="flex gap-3 flex-wrap">
+                  {members.map(m => (
+                    <div key={m.id} className="flex flex-col items-center gap-1">
+                      <MemberAvatar
+                        member={m}
+                        size="md"
+                        checked={splitAmong.includes(m.id)}
+                        onClick={() => toggleSplit(m.id)}
+                      />
+                      <span className="text-[10px] text-muted-foreground">{m.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              {/* Members */}
-              {members.map(m => (
-                <div key={m.id} className="flex flex-col items-center gap-1">
-                  <div className={`p-0.5 rounded-full transition-all ${paidBy === m.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-card' : ''}`}>
-                    <MemberAvatar
-                      member={m}
-                      size="md"
-                      onClick={() => {
-                        lastPayerTapRef.current = Date.now();
-                        setPaidBy(m.id);
-                      }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">{m.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          </StaggerItem>
+              </StaggerItem>
+            </>
+          )}
 
-          {/* Split among */}
-          <StaggerItem>
-          <div className="bg-card border border-border rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-xs text-muted-foreground">{t.addExpense.participants}</label>
-              <button
-                onClick={() => setSplitAmong(
-                  splitAmong.length === members.length ? [] : members.map(m => m.id)
-                )}
-                className={`text-xs px-3 py-1 rounded-full font-medium transition-all
-                  ${splitAmong.length === members.length
-                    ? 'bg-primary text-white'
-                    : 'bg-accent-bg text-primary'
-                  }`}
-              >
-                {splitAmong.length === members.length ? t.addExpense.deselectAll : t.addExpense.selectAll}
-              </button>
-            </div>
-            <div className="flex gap-3 flex-wrap">
-              {members.map(m => (
-                <div key={m.id} className="flex flex-col items-center gap-1">
-                  <MemberAvatar
-                    member={m}
-                    size="md"
-                    checked={splitAmong.includes(m.id)}
-                    onClick={() => toggleSplit(m.id)}
-                  />
-                  <span className="text-[10px] text-muted-foreground">{m.name}</span>
+          {/* ── Personal-only sections ─────────────────────── */}
+          {isPersonal && (
+            <>
+              {/* For which member */}
+              <StaggerItem>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <label className="block text-xs text-muted-foreground mb-3">{t.addExpense.forMember}</label>
+                <div className="flex gap-3 flex-wrap">
+                  {members.map(m => (
+                    <div key={m.id} className="flex flex-col items-center gap-1">
+                      <div className={`p-0.5 rounded-full transition-all ${personalFor === m.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-card' : ''}`}>
+                        <MemberAvatar
+                          member={m}
+                          size="md"
+                          onClick={() => setPersonalFor(m.id)}
+                        />
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">{m.name}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          </StaggerItem>
+              </div>
+              </StaggerItem>
+
+              {/* Visibility */}
+              <StaggerItem>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <label className="block text-xs text-muted-foreground mb-3">{t.addExpense.visibility}</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setVisibility('private')}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors border
+                      ${visibility === 'private'
+                        ? 'bg-accent-bg text-foreground border-primary/30'
+                        : 'bg-secondary text-muted-foreground border-border'
+                      }`}
+                  >
+                    <Lock size={14} strokeWidth={2} /> {t.addExpense.private}
+                  </button>
+                  <button
+                    onClick={() => setVisibility('group')}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors border
+                      ${visibility === 'group'
+                        ? 'bg-accent-bg text-foreground border-primary/30'
+                        : 'bg-secondary text-muted-foreground border-border'
+                      }`}
+                  >
+                    <Eye size={14} strokeWidth={2} /> {t.addExpense.groupVisible}
+                  </button>
+                </div>
+              </div>
+              </StaggerItem>
+            </>
+          )}
 
           {/* Date */}
           <StaggerItem>

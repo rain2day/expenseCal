@@ -171,6 +171,13 @@ export const zh: Translations = {
     fundOverdraft: '公數餘額不足',
     updatedExpense: '已更新支出',
     addedExpense: '已新增支出',
+    typeGroup: '公數',
+    typePersonal: '個人消費',
+    forMember: '記入帳戶',
+    visibility: '可見性',
+    private: '私人',
+    groupVisible: '群組可見',
+    addedPersonal: '已記錄個人消費',
   },
   expenseHistory: {
     title: '支出紀錄',

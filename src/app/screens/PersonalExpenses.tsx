@@ -28,7 +28,6 @@ export function PersonalExpenses() {
   const { t } = useT();
   const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<string | null>(null);
 
   const member = memberId ? getMember(memberId) : undefined;
@@ -39,6 +38,11 @@ export function PersonalExpenses() {
     const cleanup = loadPersonalExpenses(memberId);
     return cleanup;
   }, [memberId, loadPersonalExpenses]);
+
+  // Navigate to shared AddExpense in personal mode
+  function goAddPersonal() {
+    navigate('/app/add-expense', { state: { personalMode: true, memberId } });
+  }
 
   // ── Stats ────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -96,7 +100,13 @@ export function PersonalExpenses() {
             <button onClick={() => navigate(-1)} className="text-muted-foreground active:text-foreground transition-colors">
               <ArrowLeft size={20} strokeWidth={2} />
             </button>
-            <h1 className="text-xl font-black text-foreground">{t.personal.title(member.name)}</h1>
+            <h1 className="text-xl font-black text-foreground flex-1">{t.personal.title(member.name)}</h1>
+            <button
+              onClick={goAddPersonal}
+              className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <Plus size={16} strokeWidth={2.5} />
+            </button>
           </div>
 
           {/* Tab bar */}
@@ -306,197 +316,6 @@ export function PersonalExpenses() {
           </div>
         )}
       </div>
-
-      {/* ── FAB for quick add ──────────────────────────────── */}
-      <button
-        onClick={() => setShowAddForm(true)}
-        className="lg:hidden fixed z-40 rounded-full bg-primary text-white flex items-center justify-center border border-white/24 active:scale-90 transition-transform"
-        style={{
-          bottom: 'calc(max(env(safe-area-inset-bottom, 0px), 8px) + 86px)',
-          right: '20px',
-          width: '56px',
-          height: '56px',
-          boxShadow: '0 8px 24px rgba(221,132,60,0.4)',
-        }}
-      >
-        <Plus size={24} strokeWidth={2.5} />
-      </button>
-
-      {/* Desktop add button */}
-      <div className="hidden lg:block max-w-2xl mx-auto px-4 pb-6">
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="w-full bg-primary text-white rounded-xl py-3 flex items-center justify-center gap-2 font-bold active:scale-95 transition-transform shadow-lg shadow-primary/20"
-        >
-          <Plus size={17} strokeWidth={2.5} />
-          {t.personal.addTitle}
-        </button>
-      </div>
-
-      {/* ── Add Form Overlay ──────────────────────────── */}
-      <AnimatePresence>
-        {showAddForm && memberId && (
-          <AddPersonalExpenseForm
-            memberId={memberId}
-            onClose={() => setShowAddForm(false)}
-          />
-        )}
-      </AnimatePresence>
     </div>
-  );
-}
-
-/* ════════════════════════════════════════════════════════════════════
-   Add Personal Expense Form (bottom sheet overlay)
-   ════════════════════════════════════════════════════════════════════ */
-
-const CATEGORIES: CategoryType[] = ['food', 'transport', 'accommodation', 'tickets', 'shopping', 'other'];
-
-function AddPersonalExpenseForm({
-  memberId,
-  onClose,
-}: {
-  memberId: string;
-  onClose: () => void;
-}) {
-  const { addPersonalExpense, showToast } = useApp();
-  const { t } = useT();
-
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<CategoryType>('shopping');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [visibility, setVisibility] = useState<'private' | 'group'>('private');
-
-  function handleSave() {
-    const amtNum = Math.round(Number(amount));
-    if (!amtNum || amtNum <= 0 || !description.trim()) {
-      showToast('error', t.addExpense.errorRequired);
-      return;
-    }
-
-    const exp = {
-      id: `pe_${Date.now()}`,
-      amount: amtNum,
-      description: description.trim(),
-      category,
-      date,
-      visibility,
-    };
-
-    addPersonalExpense(memberId, exp);
-    showToast('success', t.personal.added);
-    onClose();
-  }
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end justify-center"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <motion.div
-        className="w-full max-w-lg bg-card border-t border-border rounded-t-3xl p-5 space-y-4"
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', stiffness: 400, damping: 34 }}
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="font-black text-foreground">{t.personal.addTitle}</h2>
-          <button onClick={onClose} className="text-muted-foreground active:text-foreground transition-colors text-lg">✕</button>
-        </div>
-
-        {/* Amount */}
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">{t.personal.enterAmount}</label>
-          <input
-            autoFocus
-            type="number"
-            inputMode="numeric"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            placeholder="0"
-            className="w-full bg-secondary rounded-xl px-3 py-2.5 text-lg font-black text-foreground outline-none border border-border focus:border-primary tabular-nums"
-          />
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">{t.personal.description}</label>
-          <input
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-            placeholder={t.personal.descriptionPlaceholder}
-            className="w-full bg-secondary rounded-xl px-3 py-2.5 text-sm text-foreground outline-none border border-border focus:border-primary placeholder:text-subtle"
-          />
-        </div>
-
-        {/* Category */}
-        <div>
-          <label className="text-xs text-muted-foreground mb-1.5 block">{t.personal.category}</label>
-          <div className="flex gap-2 flex-wrap">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors
-                  ${category === cat
-                    ? 'bg-accent-bg text-primary border border-primary/30'
-                    : 'bg-secondary text-muted-foreground border border-border'
-                  }`}
-              >
-                <CategoryIcon category={cat} size="sm" />
-                {t.categories[cat]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Date + Visibility */}
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">{t.personal.date}</label>
-            <input
-              type="date"
-              value={date}
-              onChange={e => setDate(e.target.value)}
-              className="w-full bg-secondary rounded-xl px-3 py-2.5 text-sm text-foreground outline-none border border-border focus:border-primary"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-xs text-muted-foreground mb-1 block">{t.personal.visibility}</label>
-            <div className="flex gap-1 bg-secondary rounded-xl p-1 border border-border">
-              <button
-                onClick={() => setVisibility('private')}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors
-                  ${visibility === 'private' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-              >
-                <Lock size={11} /> {t.personal.private}
-              </button>
-              <button
-                onClick={() => setVisibility('group')}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors
-                  ${visibility === 'group' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}
-              >
-                <Eye size={11} /> {t.personal.group}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          className="w-full bg-primary text-white rounded-xl py-3 font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-primary/20"
-        >
-          {t.personal.save}
-        </button>
-      </motion.div>
-    </motion.div>
   );
 }
