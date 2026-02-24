@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Pencil, Wallet, BarChart3 } from 'lucide-react';
+import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Pencil, Wallet } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
@@ -187,7 +187,13 @@ export function Members() {
                       )}
                       {/* Personal expenses preview */}
                       <div className="mt-3 pt-3 border-t border-border">
-                        <p className="text-xs font-bold text-subtle uppercase tracking-wider mb-2">{t.personal.personalExpensesLabel}</p>
+                        <button
+                          onClick={() => navigate(`/app/personal/${b.member.id}`)}
+                          className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1 active:opacity-70 transition-opacity"
+                        >
+                          {t.personal.personalExpensesLabel}
+                          <span className="text-[10px]">›</span>
+                        </button>
                         {personalExpensesLoading ? (
                           <div className="flex justify-center py-2">
                             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -232,7 +238,10 @@ export function Members() {
                                       },
                                     ]}
                                   >
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-card">
+                                    <div
+                                      className="flex items-center gap-2 px-3 py-2 bg-card cursor-pointer active:bg-secondary transition-colors"
+                                      onClick={() => navigate(`/app/personal/${b.member.id}`)}
+                                    >
                                       <CategoryIcon category={pe.category as CategoryType} size="sm" />
                                       <div className="flex-1 min-w-0 flex items-center gap-1">
                                         <span className="text-xs text-muted-foreground truncate">{pe.description}</span>
@@ -253,14 +262,7 @@ export function Members() {
                             )}
                           </>
                         ) : null}
-                        {/* Link to full stats */}
-                        <button
-                          onClick={() => navigate(`/app/personal/${b.member.id}`)}
-                          className="flex items-center gap-2 w-full py-2 px-1 mt-1 text-sm font-bold text-primary active:text-primary/70 transition-colors"
-                        >
-                          <BarChart3 size={15} strokeWidth={2} />
-                          {t.personal.viewPersonal}
-                        </button>
+                        {/* Tap any item above to go to personal expenses page */}
                       </div>
 
                       {/* Delete member */}
