@@ -511,7 +511,7 @@ export function Settlement() {
                           {t.groupBuy.markPaid}
                         </button>
                         <button
-                          onClick={() => setConfirmDeleteGbId(d.gbId)}
+                          onClick={() => setConfirmDeleteGbId(`${d.gbId}-${d.debtorId}`)}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         >
                           <Trash2 size={13} strokeWidth={2} />
@@ -520,7 +520,7 @@ export function Settlement() {
                     </div>
                     {/* Delete confirmation */}
                     <AnimatePresence>
-                      {confirmDeleteGbId === d.gbId && (
+                      {confirmDeleteGbId === `${d.gbId}-${d.debtorId}` && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -595,7 +595,7 @@ export function Settlement() {
                           <Check size={12} strokeWidth={2.5} /> {t.groupBuy.paid}
                         </button>
                         <button
-                          onClick={() => setConfirmDeleteGbId(d.gbId)}
+                          onClick={() => setConfirmDeleteGbId(`${d.gbId}-${d.debtorId}`)}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         >
                           <Trash2 size={13} strokeWidth={2} />
@@ -604,7 +604,7 @@ export function Settlement() {
                     </div>
                     {/* Delete confirmation */}
                     <AnimatePresence>
-                      {confirmDeleteGbId === d.gbId && (
+                      {confirmDeleteGbId === `${d.gbId}-${d.debtorId}` && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
