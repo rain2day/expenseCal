@@ -78,6 +78,7 @@ export const ja: Translations = {
     usedPercent: (pct: number) => `${pct}% 使用済み`,
     remaining: '残り',
     overspent: '超過',
+    advanceTotal: '立替え未精算',
   },
   settlement: {
     title: '精算',
@@ -141,6 +142,13 @@ export const ja: Translations = {
     statTotalFund: '総資金',
     sufficient: '✓ 充分',
     deficit: '不足額',
+    fundBreakdown: '資金明細',
+    fundSpentLabel: '資金支出',
+    advancePending: '立替え未精算',
+    fundRemaining: '資金残高',
+    netBalance: '純残高',
+    paymentRatio: '支払方法比率',
+    advancePercent: (n: number) => `立替え ${n}%`,
   },
   addExpense: {
     titleNew: '支出を追加',

@@ -656,6 +656,9 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
+  .pt-header {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+  }
 }
 
 /* ── Geo-bg fallback: make --card translucent so even if the explicit

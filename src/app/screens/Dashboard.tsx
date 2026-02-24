@@ -18,8 +18,10 @@ export function Dashboard() {
 
   const perPerson = Math.round(totalSpent / members.length);
   const remaining = fundBalance;
+  const memberAdvanced = totalSpent - fundSpent;
+  // Health = net coverage: how much of the fund covers ALL spending (including advances)
   const healthPctRaw = totalContributions > 0
-    ? Math.round((fundBalance / totalContributions) * 100)
+    ? Math.round(((totalContributions - totalSpent) / totalContributions) * 100)
     : 100;
   const healthPct = Math.max(0, Math.min(100, healthPctRaw));
   const recentExpenses = expenses.slice(0, 4);
@@ -79,7 +81,7 @@ export function Dashboard() {
   return (
     <div className="bg-transparent min-h-screen w-full overflow-x-hidden">
       {/* ── Header ────────────────────────────────────────────────── */}
-      <div className="bg-sidebar px-4 pt-6 pb-4 border-b border-border lg:pt-6">
+      <div className="bg-sidebar px-4 pt-header pb-4 border-b border-border lg:pt-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -161,6 +163,14 @@ export function Dashboard() {
               <p className={`font-black tabular-nums text-sm ${fundBalance >= 0 ? 'text-success' : 'text-destructive'}`}>{fmt(fundBalance)}</p>
             </div>
           </div>
+          {memberAdvanced > 0 && (
+            <div className="bg-background rounded-xl p-3 border border-amber-500/30 mb-1">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">{t.dashboard.advanceTotal}</p>
+                <p className="font-black tabular-nums text-sm" style={{ color: '#C8914A' }}>{fmt(memberAdvanced)}</p>
+              </div>
+            </div>
+          )}
           {showAddFund && (
             <div className="mt-3 space-y-3 bg-background rounded-xl p-3 border border-border">
               <div>

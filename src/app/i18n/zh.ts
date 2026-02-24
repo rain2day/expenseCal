@@ -78,6 +78,7 @@ export const zh: Translations = {
     usedPercent: (pct: number) => `${pct}% 已使用`,
     remaining: '剩餘',
     overspent: '超支',
+    advanceTotal: '墊付待還',
   },
   settlement: {
     title: '結算',
@@ -141,6 +142,13 @@ export const zh: Translations = {
     statTotalFund: '總公數',
     sufficient: '✓ 充足',
     deficit: '差額',
+    fundBreakdown: '資金明細',
+    fundSpentLabel: '公數已出',
+    advancePending: '墊付待還',
+    fundRemaining: '基金剩餘',
+    netBalance: '淨結餘',
+    paymentRatio: '支付方式比例',
+    advancePercent: (n: number) => `墊付 ${n}%`,
   },
   addExpense: {
     titleNew: '新增支出',

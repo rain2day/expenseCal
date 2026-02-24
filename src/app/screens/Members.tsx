@@ -36,7 +36,7 @@ export function Members() {
   return (
     <div className="bg-transparent min-h-screen w-full overflow-x-hidden">
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div className="bg-sidebar px-4 pt-6 pb-4 border-b border-border lg:pt-6">
+      <div className="bg-sidebar px-4 pt-header pb-4 border-b border-border lg:pt-6">
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-2">
           <h1 className="text-xl font-black text-foreground">{t.members.title}</h1>
           <button

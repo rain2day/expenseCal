@@ -78,6 +78,7 @@ export interface Translations {
     usedPercent: (pct: number) => string;
     remaining: string;
     overspent: string;
+    advanceTotal: string;
   };
   settlement: {
     title: string;
@@ -139,6 +140,13 @@ export interface Translations {
     statTotalFund: string;
     sufficient: string;
     deficit: string;
+    fundBreakdown: string;
+    fundSpentLabel: string;
+    advancePending: string;
+    fundRemaining: string;
+    netBalance: string;
+    paymentRatio: string;
+    advancePercent: (n: number) => string;
   };
   addExpense: {
     titleNew: string;

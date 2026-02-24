@@ -86,7 +86,7 @@ function trendStats(data: TrendPoint[]) {
 }
 
 export function Analytics() {
-  const { expenses, contributions, balances, budget, demoMode, currency, fmt } = useApp();
+  const { expenses, contributions, balances, budget, demoMode, currency, fmt, fundSpent, fundBalance, totalContributions } = useApp();
   const { t } = useT();
   const [tab, setTab] = useState<Tab>('category');
 
@@ -120,7 +120,7 @@ export function Analytics() {
   return (
     <div className="bg-transparent min-h-screen">
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div className="bg-sidebar px-4 pt-6 pb-0 border-b border-border lg:pt-6">
+      <div className="bg-sidebar px-4 pt-header pb-0 border-b border-border lg:pt-6">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-xl font-black text-foreground mb-4">{t.analytics.title}</h1>
           <div className="flex">
@@ -392,16 +392,76 @@ export function Analytics() {
               </div>
               <div className="bg-card border border-border rounded-2xl p-3.5">
                 <div className="text-[10px] text-muted-foreground mb-1">{t.analytics.statTotalFund}</div>
-                <div className="text-lg font-black tabular-nums" style={{ color: stats.totalContrib >= stats.totalSpent ? '#72A857' : '#D05242' }}>
-                  {fmt(stats.totalContrib)}
-                </div>
-                <div className="text-[10px] text-subtle mt-0.5">
-                  {stats.totalContrib >= stats.totalSpent ? t.analytics.sufficient : `${t.analytics.deficit} ${fmt(stats.totalSpent - stats.totalContrib)}`}
-                </div>
+                <div className="text-lg font-black text-foreground tabular-nums">{fmt(stats.totalContrib)}</div>
               </div>
             </div>
             </StaggerItem>
           )}
+
+          {/* ── Fund Breakdown Card ──────────────────────────────── */}
+          {stats && totalContributions > 0 && (() => {
+            const memberAdvanced = totalSpent - fundSpent;
+            const netBalance = totalContributions - totalSpent;
+            const advanceRatio = totalSpent > 0 ? memberAdvanced / totalSpent : 0;
+
+            return (
+              <StaggerItem>
+              <div className="bg-card border border-border rounded-2xl p-4">
+                <div className="text-xs font-bold text-foreground mb-3">{t.analytics.fundBreakdown}</div>
+
+                <div className="space-y-2.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">{t.analytics.fundSpentLabel}</span>
+                    <span className="text-xs font-bold text-foreground tabular-nums">{fmt(fundSpent)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">{t.analytics.advancePending}</span>
+                    <span className="text-xs font-bold tabular-nums" style={{ color: advanceRatio > 0.5 ? '#C8914A' : 'var(--foreground)' }}>
+                      {fmt(memberAdvanced)}
+                    </span>
+                  </div>
+                  <div className="border-t border-border" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">{t.analytics.fundRemaining}</span>
+                    <span className={`text-xs font-bold tabular-nums ${fundBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {fmt(fundBalance)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-foreground">{t.analytics.netBalance}</span>
+                    <span className="text-sm font-black tabular-nums" style={{ color: netBalance >= 0 ? '#72A857' : '#D05242' }}>
+                      {netBalance >= 0 ? t.analytics.sufficient : `${t.analytics.deficit} ${fmt(Math.abs(netBalance))}`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Advance ratio bar */}
+                {memberAdvanced > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex justify-between text-[10px] text-subtle mb-1.5">
+                      <span>{t.analytics.paymentRatio}</span>
+                      <span>{t.analytics.advancePercent(Math.round(advanceRatio * 100))}</span>
+                    </div>
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden flex">
+                      <div
+                        className="h-full rounded-l-full"
+                        style={{ width: `${Math.round((1 - advanceRatio) * 100)}%`, background: '#3B5BA5' }}
+                      />
+                      <div
+                        className="h-full rounded-r-full"
+                        style={{ width: `${Math.round(advanceRatio * 100)}%`, background: advanceRatio > 0.5 ? '#C8914A' : '#5A7EC5' }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-subtle mt-1">
+                      <span>{t.analytics.fundSpentLabel}</span>
+                      <span>{t.analytics.advancePending}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              </StaggerItem>
+            );
+          })()}
           </>
           );
         })()}

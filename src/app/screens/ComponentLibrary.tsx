@@ -46,7 +46,7 @@ export function ComponentLibrary() {
   return (
     <div className="bg-transparent min-h-screen">
       {/* Header */}
-      <div className="bg-sidebar px-4 pt-6 pb-4 border-b border-border lg:pt-6">
+      <div className="bg-sidebar px-4 pt-header pb-4 border-b border-border lg:pt-6">
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
             <ArrowLeft size={15} strokeWidth={2} />

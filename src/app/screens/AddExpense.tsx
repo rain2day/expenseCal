@@ -97,7 +97,7 @@ export function AddExpense() {
       className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden"
     >
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="shrink-0 bg-sidebar px-4 pt-6 pb-4 border-b border-border flex items-center justify-between lg:pt-6">
+      <div className="shrink-0 bg-sidebar px-4 pt-header pb-4 border-b border-border flex items-center justify-between lg:pt-6">
         <h1 className="text-lg font-black text-foreground">{isEdit ? t.addExpense.titleEdit : t.addExpense.titleNew}</h1>
         <button
           onClick={() => navigate(-1)}

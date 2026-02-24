@@ -59,7 +59,7 @@ export function ExpenseHistory() {
   return (
     <div className="bg-transparent min-h-screen flex flex-col">
       {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="bg-sidebar px-4 pt-6 pb-3 border-b border-border lg:pt-6">
+      <div className="bg-sidebar px-4 pt-header pb-3 border-b border-border lg:pt-6">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-xl font-black text-foreground mb-3">{t.expenseHistory.title}</h1>
           <div className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 border border-border">
