@@ -12,6 +12,8 @@ import { PersonalExpenses } from './screens/PersonalExpenses';
 import { Settings } from './screens/Settings';
 import { ComponentLibrary } from './screens/ComponentLibrary';
 import { JoinGroup } from './screens/JoinGroup';
+import { GroupBuyForm } from './screens/GroupBuyForm';
+import { GroupBuyDetail } from './screens/GroupBuyDetail';
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -49,6 +51,8 @@ export const router = createBrowserRouter([
       { path: 'analytics', Component: Analytics },
       { path: 'members', Component: Members },
       { path: 'personal/:memberId', Component: PersonalExpenses },
+      { path: 'group-buy', Component: GroupBuyForm },
+      { path: 'group-buy/:groupBuyId', Component: GroupBuyDetail },
       { path: 'settings', Component: Settings },
     ],
   },
