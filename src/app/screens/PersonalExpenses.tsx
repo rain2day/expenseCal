@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, ArrowLeft, Lock, Eye, Trash2 } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useApp } from '../context/AppContext';
@@ -155,14 +155,7 @@ export function PersonalExpenses() {
                         <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
                         <p className="text-xs text-muted-foreground">{exp.date}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {exp.visibility === 'private' ? (
-                          <Lock size={12} className="text-subtle" />
-                        ) : (
-                          <Eye size={12} className="text-subtle" />
-                        )}
-                        <span className="font-black text-sm tabular-nums text-foreground">{fmt(exp.amount)}</span>
-                      </div>
+                      <span className="font-black text-sm tabular-nums text-foreground">{fmt(exp.amount)}</span>
                     </div>
 
                     {/* Expanded: delete action */}

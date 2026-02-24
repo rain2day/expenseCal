@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { X, Calendar, Check, Wallet, Lock, Eye } from 'lucide-react';
+import { X, Calendar, Check, Wallet, Lock } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
@@ -45,7 +45,6 @@ export function AddExpense() {
 
   // Personal-mode specific state
   const [personalFor, setPersonalFor] = useState<string>(personalMemberId ?? members[0]?.id ?? '');
-  const [visibility, setVisibility] = useState<'private' | 'group'>('private');
 
   const isPersonal = expenseType === 'personal';
 
@@ -78,7 +77,7 @@ export function AddExpense() {
         description: description.trim(),
         category,
         date,
-        visibility,
+        visibility: 'private',
       });
       showToast('success', t.addExpense.addedPersonal);
       navigate(-1);
@@ -343,35 +342,6 @@ export function AddExpense() {
                       <span className="text-[10px] text-muted-foreground">{m.name}</span>
                     </div>
                   ))}
-                </div>
-              </div>
-              </StaggerItem>
-
-              {/* Visibility */}
-              <StaggerItem>
-              <div className="bg-card border border-border rounded-2xl p-4">
-                <label className="block text-xs text-muted-foreground mb-3">{t.addExpense.visibility}</label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setVisibility('private')}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors border
-                      ${visibility === 'private'
-                        ? 'bg-accent-bg text-foreground border-primary/30'
-                        : 'bg-secondary text-muted-foreground border-border'
-                      }`}
-                  >
-                    <Lock size={14} strokeWidth={2} /> {t.addExpense.private}
-                  </button>
-                  <button
-                    onClick={() => setVisibility('group')}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors border
-                      ${visibility === 'group'
-                        ? 'bg-accent-bg text-foreground border-primary/30'
-                        : 'bg-secondary text-muted-foreground border-border'
-                      }`}
-                  >
-                    <Eye size={14} strokeWidth={2} /> {t.addExpense.groupVisible}
-                  </button>
                 </div>
               </div>
               </StaggerItem>
