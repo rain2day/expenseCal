@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, Bell, Plus, ScanLine, ArrowLeftRight, Wallet } from 'lucide-react';
+import { ChevronRight, Bell, Plus, ScanLine, ArrowLeftRight, Wallet, ShoppingBag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { FUND_PAYER_ID, getCurrencyMinorDigits, parseAmountInput, splitAmountEvenly } from '../data/sampleData';
@@ -225,10 +225,11 @@ export function Dashboard() {
         </div></StaggerItem>
 
         {/* ── Quick Actions ──────────────────────────────────────── */}
-        <StaggerItem><div className="grid grid-cols-3 gap-3">
+        <StaggerItem><div className="grid grid-cols-4 gap-2.5">
           {[
             { label: t.dashboard.newExpense, Icon: Plus,           color: '#DD843C', bg: 'var(--accent-bg)', to: '/app/add-expense' },
             { label: t.dashboard.scanReceipt, Icon: ScanLine,        color: '#9055A0', bg: 'var(--purple-bg)', to: '/app/scan' },
+            { label: t.groupBuy.title, Icon: ShoppingBag, color: '#4A90D9', bg: 'var(--info-bg)', to: '/app/group-buy' },
             { label: t.dashboard.viewSettlement, Icon: ArrowLeftRight,  color: '#72A857', bg: 'var(--success-bg)', to: '/app/settlement' },
           ].map(a => (
             <button key={a.label}
