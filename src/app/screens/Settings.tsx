@@ -277,9 +277,7 @@ export function Settings() {
           className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 active:bg-secondary transition-colors cursor-pointer"
           onClick={() => { setTempName(groupName); setEditingName(true); }}
         >
-          <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white text-2xl font-black flex-shrink-0 shadow-lg shadow-primary/20">
-            公
-          </div>
+          <img src={`${import.meta.env.BASE_URL}icon-dark.svg`} alt="app icon" className="w-14 h-14 rounded-2xl flex-shrink-0 shadow-lg shadow-primary/20" />
           <div className="flex-1 min-w-0">
             <p className="font-black text-foreground truncate">{groupName}</p>
             <p className="text-xs text-muted-foreground">{t.settings.memberCount(members.length, fmt(totalContributions))}</p>
