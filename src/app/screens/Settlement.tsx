@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Check, PartyPopper, Wallet, Trash2, ChevronDown, ChevronUp, CreditCard, ShoppingBag } from 'lucide-react';
+import { Check, PartyPopper, Wallet, Trash2, ChevronDown, ChevronUp, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { MemberAvatar, BalanceBadge, StaggerContainer, StaggerItem, CategoryIcon } from '../components/SharedComponents';
@@ -39,7 +39,6 @@ export function Settlement() {
   const [showContribHistory, setShowContribHistory] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [showAdvanceHistory, setShowAdvanceHistory] = useState(false);
-  const [showGroupBuyDebts, setShowGroupBuyDebts] = useState(true);
 
   // Lazy-load group buys
   useEffect(() => {
@@ -460,98 +459,97 @@ export function Settlement() {
         {/* ── Group Buy Debts (搭單還款) ─────────────────────────── */}
         {groupBuyDebts.length > 0 && (
           <StaggerItem>
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setShowGroupBuyDebts(v => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left"
-              >
-                <div className="flex items-center gap-2">
-                  <ShoppingBag size={14} className="text-info" strokeWidth={2} />
-                  <span className="text-sm font-bold text-foreground">{t.groupBuy.title}{t.settlement.transferTo ? '' : ''}</span>
-                  {unsettledDebts.length > 0 && (
-                    <span className="text-[10px] bg-warning-bg text-warning px-1.5 py-0.5 rounded-md font-bold">
-                      {unsettledDebts.length} {t.groupBuy.unpaid}
-                    </span>
-                  )}
-                </div>
-                {showGroupBuyDebts
-                  ? <ChevronUp size={14} className="text-subtle" />
-                  : <ChevronDown size={14} className="text-subtle" />
-                }
-              </button>
-              <AnimatePresence>
-                {showGroupBuyDebts && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="border-t border-border">
-                      {/* Unsettled debts first */}
-                      {unsettledDebts.map((d, i) => {
-                        const debtor = getMember(d.debtorId);
-                        const creditor = getMember(d.creditorId);
-                        return (
-                          <div
-                            key={`${d.gbId}-${d.debtorId}`}
-                            className={`flex items-center gap-3 px-4 py-2.5 ${i < unsettledDebts.length - 1 || settledDebts.length > 0 ? 'border-b border-border' : ''}`}
-                          >
-                            {debtor && <MemberAvatar member={debtor} size="sm" />}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">
-                                {t.groupBuy.owes(d.debtorName, d.creditorName, fmt(d.amount))}
-                              </p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {d.gbTitle} · {d.date}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                toggleGroupBuySettlement(d.gbId, d.debtorId);
-                                showToast('success', t.groupBuy.markPaid);
-                              }}
-                              className="text-[10px] bg-accent-bg text-primary px-2.5 py-1.5 rounded-lg font-bold shrink-0 active:scale-95 transition-transform"
-                            >
-                              {t.groupBuy.markPaid}
-                            </button>
-                          </div>
-                        );
-                      })}
-                      {/* Settled debts */}
-                      {settledDebts.map((d, i) => {
-                        const debtor = getMember(d.debtorId);
-                        return (
-                          <div
-                            key={`${d.gbId}-${d.debtorId}`}
-                            className={`flex items-center gap-3 px-4 py-2.5 opacity-45 ${i < settledDebts.length - 1 ? 'border-b border-border' : ''}`}
-                          >
-                            {debtor && <MemberAvatar member={debtor} size="sm" />}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">
-                                {t.groupBuy.owes(d.debtorName, d.creditorName, fmt(d.amount))}
-                              </p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {d.gbTitle} · {d.date}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                toggleGroupBuySettlement(d.gbId, d.debtorId);
-                                showToast('info', t.groupBuy.markUnpaid);
-                              }}
-                              className="text-[10px] bg-success-bg text-success px-2.5 py-1.5 rounded-lg font-bold shrink-0 active:scale-95 transition-transform flex items-center gap-0.5"
-                            >
-                              <Check size={10} strokeWidth={2.5} /> {t.groupBuy.paid}
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-bold text-subtle uppercase tracking-wider">{t.groupBuy.title}</h2>
+                {unsettledDebts.length > 0 && (
+                  <span className="text-[10px] bg-warning-bg text-warning px-1.5 py-0.5 rounded-md font-bold">
+                    {unsettledDebts.length} {t.groupBuy.unpaid}
+                  </span>
                 )}
-              </AnimatePresence>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {/* Unsettled debts first */}
+              {unsettledDebts.map(d => {
+                const debtor = getMember(d.debtorId);
+                const creditor = getMember(d.creditorId);
+                return (
+                  <div
+                    key={`${d.gbId}-${d.debtorId}`}
+                    className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3"
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {debtor && <MemberAvatar member={debtor} size="sm" />}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[10px] text-muted-foreground">{t.settlement.transferTo}</span>
+                        <span className="text-lg text-subtle">→</span>
+                      </div>
+                      {creditor && <MemberAvatar member={creditor} size="sm" />}
+                      <div className="ml-1">
+                        <p className="text-xs text-muted-foreground truncate">
+                          {d.debtorName} → {d.creditorName}
+                        </p>
+                        <p className="font-black text-sm text-foreground tabular-nums">
+                          {fmt(d.amount)}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">{d.gbTitle} · {d.date}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        toggleGroupBuySettlement(d.gbId, d.debtorId);
+                        showToast('success', t.groupBuy.markPaid);
+                      }}
+                      className="bg-accent-bg text-primary px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 hover:bg-accent-bg/80 transition-colors active:scale-95"
+                    >
+                      {t.groupBuy.markPaid}
+                    </button>
+                  </div>
+                );
+              })}
+              {/* Settled debts */}
+              {settledDebts.map(d => {
+                const debtor = getMember(d.debtorId);
+                const creditor = getMember(d.creditorId);
+                return (
+                  <motion.div
+                    key={`${d.gbId}-${d.debtorId}`}
+                    animate={{ opacity: 0.45 }}
+                    className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3"
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {debtor && <MemberAvatar member={debtor} size="sm" />}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[10px] text-muted-foreground">{t.settlement.transferTo}</span>
+                        <span className="text-lg text-subtle">→</span>
+                      </div>
+                      {creditor && <MemberAvatar member={creditor} size="sm" />}
+                      <div className="ml-1">
+                        <p className="text-xs text-muted-foreground truncate">
+                          {d.debtorName} → {d.creditorName}
+                        </p>
+                        <p className="font-black text-sm text-foreground tabular-nums">
+                          {fmt(d.amount)}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">{d.gbTitle} · {d.date}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        toggleGroupBuySettlement(d.gbId, d.debtorId);
+                        showToast('info', t.groupBuy.markUnpaid);
+                      }}
+                      className="flex items-center gap-1 bg-success-bg text-success px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 hover:bg-success-bg/60 transition-colors active:scale-95"
+                    >
+                      <Check size={12} strokeWidth={2.5} /> {t.groupBuy.paid}
+                    </button>
+                  </motion.div>
+                );
+              })}
             </div>
           </StaggerItem>
         )}
