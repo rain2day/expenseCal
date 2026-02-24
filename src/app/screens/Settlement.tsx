@@ -34,11 +34,12 @@ function Confetti() {
 
 export function Settlement() {
   const { t } = useT();
-  const { balances, settlements, setSettlements, groupName, showToast, fundBalance, totalContributions, getMember, fmt, contributions, deleteContribution, expenses, groupBuys, loadGroupBuys, toggleGroupBuySettlement } = useApp();
+  const { balances, settlements, setSettlements, groupName, showToast, fundBalance, totalContributions, getMember, fmt, contributions, deleteContribution, expenses, groupBuys, loadGroupBuys, toggleGroupBuySettlement, deleteGroupBuy } = useApp();
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContribHistory, setShowContribHistory] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [showAdvanceHistory, setShowAdvanceHistory] = useState(false);
+  const [confirmDeleteGbId, setConfirmDeleteGbId] = useState<string | null>(null);
 
   // Lazy-load group buys
   useEffect(() => {
@@ -478,35 +479,79 @@ export function Settlement() {
                 return (
                   <div
                     key={`${d.gbId}-${d.debtorId}`}
-                    className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3"
+                    className="bg-card border border-border rounded-2xl px-4 py-3"
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {debtor && <MemberAvatar member={debtor} size="sm" />}
-                      <div className="flex flex-col items-center">
-                        <span className="text-[10px] text-muted-foreground">{t.settlement.transferTo}</span>
-                        <span className="text-lg text-subtle">→</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {debtor && <MemberAvatar member={debtor} size="sm" />}
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] text-muted-foreground">{t.settlement.transferTo}</span>
+                          <span className="text-lg text-subtle">→</span>
+                        </div>
+                        {creditor && <MemberAvatar member={creditor} size="sm" />}
+                        <div className="ml-1">
+                          <p className="text-xs text-muted-foreground truncate">
+                            {d.debtorName} → {d.creditorName}
+                          </p>
+                          <p className="font-black text-sm text-foreground tabular-nums">
+                            {fmt(d.amount)}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">{d.gbTitle} · {d.date}</p>
+                        </div>
                       </div>
-                      {creditor && <MemberAvatar member={creditor} size="sm" />}
-                      <div className="ml-1">
-                        <p className="text-xs text-muted-foreground truncate">
-                          {d.debtorName} → {d.creditorName}
-                        </p>
-                        <p className="font-black text-sm text-foreground tabular-nums">
-                          {fmt(d.amount)}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate">{d.gbTitle} · {d.date}</p>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            toggleGroupBuySettlement(d.gbId, d.debtorId);
+                            showToast('success', t.groupBuy.markPaid);
+                          }}
+                          className="bg-accent-bg text-primary px-3 py-1.5 rounded-full text-xs font-bold hover:bg-accent-bg/80 transition-colors active:scale-95"
+                        >
+                          {t.groupBuy.markPaid}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteGbId(d.gbId)}
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <Trash2 size={13} strokeWidth={2} />
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => {
-                        toggleGroupBuySettlement(d.gbId, d.debtorId);
-                        showToast('success', t.groupBuy.markPaid);
-                      }}
-                      className="bg-accent-bg text-primary px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 hover:bg-accent-bg/80 transition-colors active:scale-95"
-                    >
-                      {t.groupBuy.markPaid}
-                    </button>
+                    {/* Delete confirmation */}
+                    <AnimatePresence>
+                      {confirmDeleteGbId === d.gbId && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+                            <p className="text-[10px] text-muted-foreground">{t.groupBuy.deleteConfirm}</p>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => {
+                                  deleteGroupBuy(d.gbId);
+                                  setConfirmDeleteGbId(null);
+                                  showToast('success', t.groupBuy.deleted);
+                                }}
+                                className="text-[10px] px-2 py-1 bg-destructive text-white rounded-lg font-bold active:scale-95"
+                              >
+                                {t.common.confirm}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteGbId(null)}
+                                className="text-[10px] px-2 py-1 bg-secondary text-muted-foreground rounded-lg font-bold active:scale-95"
+                              >
+                                {t.common.cancel}
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}
@@ -518,35 +563,79 @@ export function Settlement() {
                   <motion.div
                     key={`${d.gbId}-${d.debtorId}`}
                     animate={{ opacity: 0.45 }}
-                    className="bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3"
+                    className="bg-card border border-border rounded-2xl px-4 py-3"
                   >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {debtor && <MemberAvatar member={debtor} size="sm" />}
-                      <div className="flex flex-col items-center">
-                        <span className="text-[10px] text-muted-foreground">{t.settlement.transferTo}</span>
-                        <span className="text-lg text-subtle">→</span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {debtor && <MemberAvatar member={debtor} size="sm" />}
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] text-muted-foreground">{t.settlement.transferTo}</span>
+                          <span className="text-lg text-subtle">→</span>
+                        </div>
+                        {creditor && <MemberAvatar member={creditor} size="sm" />}
+                        <div className="ml-1">
+                          <p className="text-xs text-muted-foreground truncate">
+                            {d.debtorName} → {d.creditorName}
+                          </p>
+                          <p className="font-black text-sm text-foreground tabular-nums">
+                            {fmt(d.amount)}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">{d.gbTitle} · {d.date}</p>
+                        </div>
                       </div>
-                      {creditor && <MemberAvatar member={creditor} size="sm" />}
-                      <div className="ml-1">
-                        <p className="text-xs text-muted-foreground truncate">
-                          {d.debtorName} → {d.creditorName}
-                        </p>
-                        <p className="font-black text-sm text-foreground tabular-nums">
-                          {fmt(d.amount)}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate">{d.gbTitle} · {d.date}</p>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            toggleGroupBuySettlement(d.gbId, d.debtorId);
+                            showToast('info', t.groupBuy.markUnpaid);
+                          }}
+                          className="flex items-center gap-1 bg-success-bg text-success px-3 py-1.5 rounded-full text-xs font-bold hover:bg-success-bg/60 transition-colors active:scale-95"
+                        >
+                          <Check size={12} strokeWidth={2.5} /> {t.groupBuy.paid}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteGbId(d.gbId)}
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <Trash2 size={13} strokeWidth={2} />
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => {
-                        toggleGroupBuySettlement(d.gbId, d.debtorId);
-                        showToast('info', t.groupBuy.markUnpaid);
-                      }}
-                      className="flex items-center gap-1 bg-success-bg text-success px-3 py-1.5 rounded-full text-xs font-bold flex-shrink-0 hover:bg-success-bg/60 transition-colors active:scale-95"
-                    >
-                      <Check size={12} strokeWidth={2.5} /> {t.groupBuy.paid}
-                    </button>
+                    {/* Delete confirmation */}
+                    <AnimatePresence>
+                      {confirmDeleteGbId === d.gbId && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+                            <p className="text-[10px] text-muted-foreground">{t.groupBuy.deleteConfirm}</p>
+                            <div className="flex gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => {
+                                  deleteGroupBuy(d.gbId);
+                                  setConfirmDeleteGbId(null);
+                                  showToast('success', t.groupBuy.deleted);
+                                }}
+                                className="text-[10px] px-2 py-1 bg-destructive text-white rounded-lg font-bold active:scale-95"
+                              >
+                                {t.common.confirm}
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteGbId(null)}
+                                className="text-[10px] px-2 py-1 bg-secondary text-muted-foreground rounded-lg font-bold active:scale-95"
+                              >
+                                {t.common.cancel}
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 );
               })}
