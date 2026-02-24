@@ -27,6 +27,7 @@ export function SwipeableRow({ children, actions, isOpen, onOpen, onClose, class
   const totalWidth = actions.length * ACTION_WIDTH;
   const x = useMotionValue(0);
   const actionsOpacity = useTransform(x, [-totalWidth, -20, 0], [1, 0.5, 0]);
+  const actionsVisibility = useTransform(x, (v): 'visible' | 'hidden' => v < -2 ? 'visible' : 'hidden');
   const isDragging = useRef(false);
 
   // Animate to open/close when external state changes
@@ -62,9 +63,9 @@ export function SwipeableRow({ children, actions, isOpen, onOpen, onClose, class
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Action buttons — positioned behind the sliding row */}
-      <div
+      <motion.div
         className="absolute right-0 top-0 bottom-0 flex items-stretch z-0"
-        style={{ width: totalWidth }}
+        style={{ width: totalWidth, visibility: actionsVisibility }}
       >
         {actions.map((action, i) => (
           <motion.button
@@ -80,11 +81,11 @@ export function SwipeableRow({ children, actions, isOpen, onOpen, onClose, class
             <span className="text-[10px] font-bold">{action.label}</span>
           </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Draggable content row */}
       <motion.div
-        style={{ x }}
+        style={{ x, touchAction: 'pan-y' }}
         drag="x"
         dragConstraints={{ left: -totalWidth, right: 0 }}
         dragElastic={0.1}

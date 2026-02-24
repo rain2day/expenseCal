@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Wallet, BarChart3 } from 'lucide-react';
+import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Pencil, Wallet, BarChart3 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { splitAmountEvenly } from '../data/sampleData';
 import { MemberAvatar, RoleBadge, BalanceBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
+import { SwipeableRow } from '../components/SwipeableRow';
 import type { CategoryType } from '../data/sampleData';
 
 export function Members() {
   const navigate = useNavigate();
   const {
     balances, expenses, showToast, groupName, groupId, deleteMember, addMember, members, fmt,
-    personalExpenses, loadPersonalExpenses, personalExpensesLoading,
+    personalExpenses, loadPersonalExpenses, personalExpensesLoading, deletePersonalExpense,
   } = useApp();
   const { t } = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [swipedPersonalId, setSwipedPersonalId] = useState<string | null>(null);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
 
@@ -187,19 +189,51 @@ export function Members() {
                           <p className="text-xs text-muted-foreground py-1">{t.personal.noPersonalExpenses}</p>
                         ) : expanded === b.member.id ? (
                           <>
-                            {personalExpenses.slice(0, 5).map((pe, index) => (
-                              <motion.div
-                                key={pe.id}
-                                className="flex items-center gap-2 py-1.5"
-                                initial={{ opacity: 0, y: 6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.22, delay: index * 0.03 }}
-                              >
-                                <CategoryIcon category={pe.category as CategoryType} size="sm" />
-                                <span className="flex-1 text-xs text-muted-foreground truncate">{pe.description}</span>
-                                <span className="text-xs font-bold tabular-nums text-foreground">{fmt(pe.amount)}</span>
-                              </motion.div>
-                            ))}
+                            <div className="rounded-xl overflow-hidden border border-border">
+                              {personalExpenses.slice(0, 5).map((pe, index) => (
+                                <motion.div
+                                  key={pe.id}
+                                  className={index < Math.min(personalExpenses.length, 5) - 1 ? 'border-b border-border' : ''}
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.22, delay: index * 0.03 }}
+                                >
+                                  <SwipeableRow
+                                    isOpen={swipedPersonalId === pe.id}
+                                    onOpen={() => setSwipedPersonalId(pe.id)}
+                                    onClose={() => setSwipedPersonalId(prev => prev === pe.id ? null : prev)}
+                                    actions={[
+                                      {
+                                        label: t.common.edit,
+                                        icon: <Pencil size={14} strokeWidth={2} />,
+                                        bgClass: 'bg-accent-bg',
+                                        textClass: 'text-primary',
+                                        onClick: () => navigate('/app/add-expense', {
+                                          state: { personalMode: true, memberId: b.member.id, editPersonalExpense: pe },
+                                        }),
+                                      },
+                                      {
+                                        label: t.common.delete,
+                                        icon: <Trash2 size={14} strokeWidth={2} />,
+                                        bgClass: 'bg-destructive/15',
+                                        textClass: 'text-destructive',
+                                        onClick: () => {
+                                          deletePersonalExpense(b.member.id, pe.id);
+                                          showToast('success', t.personal.deleted);
+                                          setSwipedPersonalId(null);
+                                        },
+                                      },
+                                    ]}
+                                  >
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-card">
+                                      <CategoryIcon category={pe.category as CategoryType} size="sm" />
+                                      <span className="flex-1 text-xs text-muted-foreground truncate">{pe.description}</span>
+                                      <span className="text-xs font-bold tabular-nums text-foreground">{fmt(pe.amount)}</span>
+                                    </div>
+                                  </SwipeableRow>
+                                </motion.div>
+                              ))}
+                            </div>
                             {personalExpenses.length > 5 && (
                               <p className="text-[10px] text-subtle mt-1">+{personalExpenses.length - 5} {t.common.items}</p>
                             )}
