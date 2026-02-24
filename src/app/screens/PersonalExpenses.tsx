@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, ArrowLeft, Trash2, Pencil } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil, ShoppingBag } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
@@ -24,6 +24,7 @@ export function PersonalExpenses() {
     getMember, personalExpenses, loadPersonalExpenses,
     deletePersonalExpense, personalExpensesLoading,
     showToast, fmt,
+    groupBuys, loadGroupBuys,
   } = useApp();
   const { t } = useT();
   const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
@@ -37,6 +38,12 @@ export function PersonalExpenses() {
     const cleanup = loadPersonalExpenses(memberId);
     return cleanup;
   }, [memberId, loadPersonalExpenses]);
+
+  // Lazy-load group buys for history section
+  useEffect(() => {
+    const cleanup = loadGroupBuys();
+    return cleanup;
+  }, [loadGroupBuys]);
 
   // Navigate to shared AddExpense in personal mode
   function goAddPersonal() {
@@ -101,6 +108,12 @@ export function PersonalExpenses() {
             </button>
             <h1 className="text-xl font-black text-foreground flex-1">{t.personal.title(member.name)}</h1>
             <button
+              onClick={() => navigate('/app/group-buy', { state: { memberId } })}
+              className="flex items-center gap-1 bg-accent-bg text-primary px-2.5 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-transform"
+            >
+              <ShoppingBag size={13} strokeWidth={2} /> {t.groupBuy.title}
+            </button>
+            <button
               onClick={goAddPersonal}
               className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center active:scale-90 transition-transform"
             >
@@ -135,6 +148,7 @@ export function PersonalExpenses() {
           </div>
         ) : activeTab === 'list' ? (
           /* ── List Tab ──────────────────────────────────── */
+          <>
           <StaggerContainer className="space-y-3">
             {personalExpenses.length === 0 ? (
               <div className="text-center py-12">
@@ -177,7 +191,14 @@ export function PersonalExpenses() {
                       <div className="flex items-center gap-3 px-4 py-3">
                         <CategoryIcon category={exp.category} size="md" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
+                            {exp.groupBuyId && (
+                              <span className="text-[10px] bg-accent-bg text-primary px-1.5 py-0.5 rounded-md font-bold shrink-0">
+                                {t.groupBuy.groupBuyTag}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground">{exp.date}</p>
                         </div>
                         <span className="font-black text-sm tabular-nums text-foreground">{fmt(exp.amount)}</span>
@@ -188,6 +209,43 @@ export function PersonalExpenses() {
               ))
             )}
           </StaggerContainer>
+
+          {/* Group Buy History */}
+          {groupBuys.filter(gb => gb.items.some(i => i.memberId === memberId) || gb.payerId === memberId).length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs font-bold text-subtle uppercase tracking-wider mb-2">{t.groupBuy.history}</p>
+              <div className="space-y-2">
+                {groupBuys
+                  .filter(gb => gb.items.some(i => i.memberId === memberId) || gb.payerId === memberId)
+                  .slice(0, 5)
+                  .map(gb => {
+                    const total = gb.items.reduce((s, i) => s + i.amount, 0);
+                    const payer = getMember(gb.payerId);
+                    const allDone = Object.values(gb.settlements).every(Boolean);
+                    return (
+                      <button
+                        key={gb.id}
+                        onClick={() => navigate(`/app/group-buy/${gb.id}`)}
+                        className="w-full bg-card border border-border rounded-xl px-3 py-2.5 flex items-center gap-3 active:bg-secondary transition-colors text-left"
+                      >
+                        <ShoppingBag size={16} className="text-primary shrink-0" strokeWidth={2} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{gb.title}</p>
+                          <p className="text-xs text-muted-foreground">{gb.date} · {payer?.name}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold tabular-nums text-foreground">{fmt(total)}</p>
+                          <p className={`text-[10px] font-bold ${allDone ? 'text-success' : 'text-warning'}`}>
+                            {allDone ? t.groupBuy.paid : t.groupBuy.unpaid}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+          </>
         ) : (
           /* ── Stats Tab ─────────────────────────────────── */
           <div className="space-y-4">
