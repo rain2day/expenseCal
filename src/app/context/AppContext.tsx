@@ -329,6 +329,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return unsub;
   }, [demoMode, groupId]);
 
+  // ── Dark mode side effect ──────────────────────────────────────────
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('gcd-dark', String(darkMode));
+  }, [darkMode]);
+
+  const toggleDarkMode = useCallback(() => setDarkMode(d => !d), []);
+
+  // ── Toast ──────────────────────────────────────────────────────────
+  const showToast = useCallback((type: Toast['type'], message: string) => {
+    const id = Date.now().toString();
+    setToasts(prev => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  }, []);
+
   // ── addPersonalExpense ──────────────────────────────────────────────
   const addPersonalExpense = useCallback((memberId: string, exp: PersonalExpense) => {
     const withCreatedAt = {
@@ -376,25 +395,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     }
   }, [demoMode, groupId, showToast, t]);
-
-  // ── Dark mode side effect ──────────────────────────────────────────
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('gcd-dark', String(darkMode));
-  }, [darkMode]);
-
-  const toggleDarkMode = useCallback(() => setDarkMode(d => !d), []);
-
-  // ── Toast ──────────────────────────────────────────────────────────
-  const showToast = useCallback((type: Toast['type'], message: string) => {
-    const id = Date.now().toString();
-    setToasts(prev => [...prev, { id, type, message }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
-  }, []);
 
   // ── Firestore: load group with listeners ───────────────────────────
   const loadGroup = useCallback((gid: string) => {
