@@ -334,6 +334,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           date: data.date,
           createdAt: data.createdAt,
           visibility: data.visibility || 'private',
+          groupBuyId: data.groupBuyId,
         });
       });
       setPersonalExpenses(items);
