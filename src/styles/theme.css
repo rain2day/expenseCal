@@ -45,6 +45,8 @@
   --success-bg: #EAF5E4;
   --purple: #7B4A8C;
   --purple-bg: #F3EAF6;
+  --info: #4A7FBB;
+  --info-bg: #E6EFF8;
   --dark-gradient: linear-gradient(145deg, #2A2C35 0%, #20232C 34%, #1C2233 62%, #372A24 100%);
   --geo-tone-a: #98653F;
   --geo-tone-b: #5E463E;
@@ -111,6 +113,8 @@
   --success-bg: color-mix(in srgb, #72A857 30%, transparent);
   --purple: #9055A0;
   --purple-bg: color-mix(in srgb, #9055A0 28%, transparent);
+  --info: #4A90D9;
+  --info-bg: color-mix(in srgb, #4A90D9 25%, transparent);
   --geo-tone-a: #98653F;
   --geo-tone-b: #5E463E;
   --geo-tone-c: #25283E;
@@ -541,6 +545,8 @@
   --color-success-bg: var(--success-bg);
   --color-purple: var(--purple);
   --color-purple-bg: var(--purple-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
 }
 
 @layer base {

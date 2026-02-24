@@ -67,11 +67,18 @@ export function GroupBuyForm() {
     setItems(prev => prev.filter((_, i) => i !== idx));
   }
 
+  // ── Validation ────────────────────────────────────────────────────
+  const uniqueMembers = new Set(items.map(i => i.memberId));
+  const hasMultipleMembers = uniqueMembers.size >= 2
+    || (uniqueMembers.size === 1 && payerId && !uniqueMembers.has(payerId));
+  const canSubmit = !!(title.trim() && payerId && items.length > 0 && hasMultipleMembers);
+
   // ── Submit handler ─────────────────────────────────────────────────
   async function handleSubmit() {
     if (!title.trim()) { showToast('error', t.groupBuy.titleLabel); return; }
     if (!payerId) { showToast('error', t.groupBuy.selectPayer); return; }
     if (items.length === 0) { showToast('error', t.groupBuy.noItems); return; }
+    if (!hasMultipleMembers) { showToast('error', t.groupBuy.needMinTwoItems); return; }
 
     // Build settlements map: each non-payer member -> false (not yet paid)
     const settlements: Record<string, boolean> = {};
@@ -366,21 +373,25 @@ export function GroupBuyForm() {
             </StaggerItem>
           )}
 
-          <div className="h-4" />
-        </StaggerContainer>
-      </div>
+          {/* ── Confirm Button (inside scroll) ───────────────────── */}
+          <StaggerItem>
+            <div className="pb-[max(env(safe-area-inset-bottom,0px),16px)]">
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className={`w-full rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 transition-all active:scale-98
+                  ${canSubmit
+                    ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  }`}
+              >
+                <ShoppingBag size={18} strokeWidth={2.5} />
+                {t.groupBuy.confirm}
+              </button>
+            </div>
+          </StaggerItem>
 
-      {/* ── Confirm Button ─────────────────────────────────────────── */}
-      <div className="shrink-0 bg-sidebar px-4 pt-4 border-t border-border pb-[max(env(safe-area-inset-bottom,0px),16px)]">
-        <div className="max-w-lg mx-auto">
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-colors active:scale-98"
-          >
-            <ShoppingBag size={18} strokeWidth={2.5} />
-            {t.groupBuy.confirm}
-          </button>
-        </div>
+        </StaggerContainer>
       </div>
     </motion.div>
   );
