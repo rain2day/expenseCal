@@ -451,6 +451,8 @@ export const zh: Translations = {
     daysWithSpending: (n: number) => `${n} 天有消費`,
     categoryDist: '分類分佈',
     dailyTrend: '每日趨勢',
-    viewPersonal: '個人消費',
+    viewPersonal: '個人消費統計分析',
+    personalExpensesLabel: '個人消費',
+    noPersonalExpenses: '暫無個人消費記錄',
   },
 };

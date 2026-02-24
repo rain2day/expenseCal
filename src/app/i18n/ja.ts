@@ -451,6 +451,8 @@ export const ja: Translations = {
     daysWithSpending: (n: number) => `${n}日支出あり`,
     categoryDist: 'カテゴリー分布',
     dailyTrend: '日別推移',
-    viewPersonal: '個人支出',
+    viewPersonal: '個人支出の統計分析',
+    personalExpensesLabel: '個人支出',
+    noPersonalExpenses: '個人支出の記録はありません',
   },
 };

@@ -438,5 +438,7 @@ export interface Translations {
     categoryDist: string;
     dailyTrend: string;
     viewPersonal: string;
+    personalExpensesLabel: string;
+    noPersonalExpenses: string;
   };
 }

@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Wallet } from 'lucide-react';
+import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Wallet, BarChart3 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { splitAmountEvenly } from '../data/sampleData';
 import { MemberAvatar, RoleBadge, BalanceBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
+import type { CategoryType } from '../data/sampleData';
 
 export function Members() {
   const navigate = useNavigate();
-  const { balances, expenses, showToast, groupName, groupId, deleteMember, addMember, members, fmt } = useApp();
+  const {
+    balances, expenses, showToast, groupName, groupId, deleteMember, addMember, members, fmt,
+    personalExpenses, loadPersonalExpenses, personalExpensesLoading,
+  } = useApp();
   const { t } = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -18,6 +22,13 @@ export function Members() {
   const [newMemberName, setNewMemberName] = useState('');
 
   const AVATAR_COLORS = ['#DD843C', '#C05A5A', '#72A857', '#5A7EC5', '#C8914A', '#9055A0', '#5AABAB', '#D05242'];
+
+  // Load personal expenses when a member card is expanded
+  useEffect(() => {
+    if (!expanded) return;
+    const cleanup = loadPersonalExpenses(expanded);
+    return cleanup;
+  }, [expanded, loadPersonalExpenses]);
 
   function handleAddMember() {
     const name = newMemberName.trim();
@@ -165,14 +176,44 @@ export function Members() {
                           );
                         })
                       )}
-                      {/* Personal expenses link */}
-                      <button
-                        onClick={() => navigate(`/app/personal/${b.member.id}`)}
-                        className="flex items-center gap-2 w-full py-2 px-1 text-sm font-bold text-primary active:text-primary/70 transition-colors"
-                      >
-                        <Wallet size={15} strokeWidth={2} />
-                        {t.personal.viewPersonal}
-                      </button>
+                      {/* Personal expenses preview */}
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className="text-xs font-bold text-subtle uppercase tracking-wider mb-2">{t.personal.personalExpensesLabel}</p>
+                        {personalExpensesLoading ? (
+                          <div className="flex justify-center py-2">
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                          </div>
+                        ) : expanded === b.member.id && personalExpenses.length === 0 ? (
+                          <p className="text-xs text-muted-foreground py-1">{t.personal.noPersonalExpenses}</p>
+                        ) : expanded === b.member.id ? (
+                          <>
+                            {personalExpenses.slice(0, 5).map((pe, index) => (
+                              <motion.div
+                                key={pe.id}
+                                className="flex items-center gap-2 py-1.5"
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.22, delay: index * 0.03 }}
+                              >
+                                <CategoryIcon category={pe.category as CategoryType} size="sm" />
+                                <span className="flex-1 text-xs text-muted-foreground truncate">{pe.description}</span>
+                                <span className="text-xs font-bold tabular-nums text-foreground">{fmt(pe.amount)}</span>
+                              </motion.div>
+                            ))}
+                            {personalExpenses.length > 5 && (
+                              <p className="text-[10px] text-subtle mt-1">+{personalExpenses.length - 5} {t.common.items}</p>
+                            )}
+                          </>
+                        ) : null}
+                        {/* Link to full stats */}
+                        <button
+                          onClick={() => navigate(`/app/personal/${b.member.id}`)}
+                          className="flex items-center gap-2 w-full py-2 px-1 mt-1 text-sm font-bold text-primary active:text-primary/70 transition-colors"
+                        >
+                          <BarChart3 size={15} strokeWidth={2} />
+                          {t.personal.viewPersonal}
+                        </button>
+                      </div>
 
                       {/* Delete member */}
                       {members.length > 1 && (
