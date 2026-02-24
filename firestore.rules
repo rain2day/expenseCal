@@ -94,13 +94,14 @@ service cloud.firestore {
       }
 
       function validPersonalExpenseData(data) {
-        return data.keys().hasOnly(['amount', 'description', 'category', 'date', 'createdAt', 'visibility']) &&
+        return data.keys().hasOnly(['amount', 'description', 'category', 'date', 'createdAt', 'visibility', 'groupBuyId']) &&
           isAmountMinorUnit(data.amount) &&
           isShortString(data.description, 120) &&
           isCategory(data.category) &&
           isDateString(data.date) &&
           isVisibility(data.visibility) &&
-          (!data.keys().hasAny(['createdAt']) || isShortString(data.createdAt, 40));
+          (!data.keys().hasAny(['createdAt']) || isShortString(data.createdAt, 40)) &&
+          (!data.keys().hasAny(['groupBuyId']) || isShortString(data.groupBuyId, 64));
       }
 
       match /personalExpenses/{memberId} {
@@ -110,6 +111,26 @@ service cloud.firestore {
       match /personalExpenses/{memberId}/items/{expenseId} {
         allow read: if isSignedIn();
         allow create, update: if isSignedIn() && validPersonalExpenseData(request.resource.data);
+        allow delete: if isSignedIn();
+      }
+
+      // ── Group buys ────────────────────────────────────────
+      function validGroupBuyData(data) {
+        return data.keys().hasOnly(['title', 'payerId', 'items', 'date', 'createdAt', 'settlements']) &&
+          isShortString(data.title, 120) &&
+          isShortString(data.payerId, 64) &&
+          data.items is list &&
+          data.items.size() >= 1 &&
+          data.items.size() <= 30 &&
+          isDateString(data.date) &&
+          (!data.keys().hasAny(['createdAt']) || isShortString(data.createdAt, 40)) &&
+          data.settlements is map;
+      }
+
+      match /groupBuys/{groupBuyId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && validGroupBuyData(request.resource.data);
+        allow update: if isSignedIn();
         allow delete: if isSignedIn();
       }
     }

@@ -46,6 +46,24 @@ export interface PersonalExpense {
   date: string;            // YYYY-MM-DD
   createdAt?: string;      // ISO timestamp
   visibility: 'private' | 'group';
+  groupBuyId?: string;     // links back to parent group buy
+}
+
+export interface GroupBuyItem {
+  memberId: string;
+  description: string;
+  amount: number;
+  category: CategoryType;
+}
+
+export interface GroupBuy {
+  id: string;
+  title: string;
+  payerId: string;
+  items: GroupBuyItem[];
+  date: string;
+  createdAt: string;
+  settlements: Record<string, boolean>;
 }
 
 export const MEMBERS: Member[] = [
@@ -84,6 +102,8 @@ export const CONTRIBUTIONS: Contribution[] = [
   { id: 'c6', memberId: 'm6', amount: 11000, date: '2026-04-09', note: '首次夾錢' },
   { id: 'c7', memberId: 'm7', amount: 11000, date: '2026-04-09', note: '首次夾錢' },
 ];
+
+export const GROUP_BUYS: GroupBuy[] = [];
 
 export const BUDGET = 80000;
 export const GROUP_NAME = '核爆都唔割鳩';
