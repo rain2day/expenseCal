@@ -38,6 +38,16 @@ export interface Contribution {
   createdAt?: string;
 }
 
+export interface PersonalExpense {
+  id: string;
+  amount: number;          // minor units (same as Expense)
+  description: string;     // max 120 chars
+  category: CategoryType;  // reuse existing 6 categories
+  date: string;            // YYYY-MM-DD
+  createdAt?: string;      // ISO timestamp
+  visibility: 'private' | 'group';
+}
+
 export const MEMBERS: Member[] = [
   { id: 'm1', name: 'a仔',  initials: 'A', color: '#DD843C', role: 'admin' },
   { id: 'm2', name: '貓仔', initials: '貓', color: '#C05A5A', role: 'member' },

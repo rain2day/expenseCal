@@ -87,6 +87,31 @@ service cloud.firestore {
         allow create, update: if isSignedIn() && validContributionData(request.resource.data);
         allow delete: if isSignedIn();
       }
+
+      // ── Personal expenses ─────────────────────────────────
+      function isVisibility(v) {
+        return v == 'private' || v == 'group';
+      }
+
+      function validPersonalExpenseData(data) {
+        return data.keys().hasOnly(['amount', 'description', 'category', 'date', 'createdAt', 'visibility']) &&
+          isAmountMinorUnit(data.amount) &&
+          isShortString(data.description, 120) &&
+          isCategory(data.category) &&
+          isDateString(data.date) &&
+          isVisibility(data.visibility) &&
+          (!data.keys().hasAny(['createdAt']) || isShortString(data.createdAt, 40));
+      }
+
+      match /personalExpenses/{memberId} {
+        allow read, write: if isSignedIn();
+      }
+
+      match /personalExpenses/{memberId}/items/{expenseId} {
+        allow read: if isSignedIn();
+        allow create, update: if isSignedIn() && validPersonalExpenseData(request.resource.data);
+        allow delete: if isSignedIn();
+      }
     }
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { UserPlus, Link2, ChevronDown, Crown, Share2, Copy, Trash2, Wallet } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
@@ -8,6 +9,7 @@ import { splitAmountEvenly } from '../data/sampleData';
 import { MemberAvatar, RoleBadge, BalanceBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 
 export function Members() {
+  const navigate = useNavigate();
   const { balances, expenses, showToast, groupName, groupId, deleteMember, addMember, members, fmt } = useApp();
   const { t } = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -163,6 +165,15 @@ export function Members() {
                           );
                         })
                       )}
+                      {/* Personal expenses link */}
+                      <button
+                        onClick={() => navigate(`/app/personal/${b.member.id}`)}
+                        className="flex items-center gap-2 w-full py-2 px-1 text-sm font-bold text-primary active:text-primary/70 transition-colors"
+                      >
+                        <Wallet size={15} strokeWidth={2} />
+                        {t.personal.viewPersonal}
+                      </button>
+
                       {/* Delete member */}
                       {members.length > 1 && (
                         <div className="mt-3 pt-3 border-t border-border">

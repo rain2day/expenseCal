@@ -399,4 +399,36 @@ export interface Translations {
     percentage: string;
     noData: string;
   };
+  personal: {
+    title: (name: string) => string;
+    listTab: string;
+    statsTab: string;
+    addTitle: string;
+    editTitle: string;
+    enterAmount: string;
+    description: string;
+    descriptionPlaceholder: string;
+    category: string;
+    date: string;
+    visibility: string;
+    private: string;
+    group: string;
+    privateHint: string;
+    groupHint: string;
+    save: string;
+    update: string;
+    noExpenses: string;
+    noExpensesHint: string;
+    deleteConfirm: string;
+    deleted: string;
+    added: string;
+    updated: string;
+    totalSpent: string;
+    dailyAvg: string;
+    peakDay: string;
+    daysWithSpending: (n: number) => string;
+    categoryDist: string;
+    dailyTrend: string;
+    viewPersonal: string;
+  };
 }

@@ -8,6 +8,7 @@ import { ReceiptScan } from './screens/ReceiptScan';
 import { Settlement } from './screens/Settlement';
 import { Analytics } from './screens/Analytics';
 import { Members } from './screens/Members';
+import { PersonalExpenses } from './screens/PersonalExpenses';
 import { Settings } from './screens/Settings';
 import { ComponentLibrary } from './screens/ComponentLibrary';
 import { JoinGroup } from './screens/JoinGroup';
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: 'settlement', Component: Settlement },
       { path: 'analytics', Component: Analytics },
       { path: 'members', Component: Members },
+      { path: 'personal/:memberId', Component: PersonalExpenses },
       { path: 'settings', Component: Settings },
     ],
   },

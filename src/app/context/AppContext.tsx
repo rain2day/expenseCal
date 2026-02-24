@@ -22,7 +22,7 @@ import {
   formatAmount,
   normalizeMinorAmount,
 } from '../data/sampleData';
-import type { Settlement, CategoryType, Contribution } from '../data/sampleData';
+import type { Settlement, CategoryType, Contribution, PersonalExpense } from '../data/sampleData';
 
 interface Toast {
   id: string;
@@ -80,6 +80,13 @@ interface AppContextValue {
   savedGroups: Array<{ id: string; name: string }>;
   switchGroup: (gid: string) => void;
   leaveCurrentGroup: () => void;
+  // Personal expenses
+  personalExpenses: PersonalExpense[];
+  loadPersonalExpenses: (memberId: string) => () => void;
+  addPersonalExpense: (memberId: string, exp: PersonalExpense) => void;
+  deletePersonalExpense: (memberId: string, expenseId: string) => void;
+  updatePersonalExpense: (memberId: string, exp: PersonalExpense) => void;
+  personalExpensesLoading: boolean;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -118,6 +125,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem('gcd-notifications');
     return stored !== null ? stored === 'true' : true;
   });
+
+  // ── Personal expenses (lazy loaded) ────────────────────────────────
+  const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>([]);
+  const [personalExpensesLoading, setPersonalExpensesLoading] = useState(false);
+  const personalCleanupRef = useRef<(() => void) | null>(null);
 
   // ── Saved groups (multi-group support) ────────────────────────────
   const [savedGroups, setSavedGroups] = useState<Array<{ id: string; name: string }>>(() => {
@@ -278,6 +290,93 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [groupId, savedGroups]);
 
+  // ── loadPersonalExpenses (lazy, called from PersonalExpenses page) ──
+  const loadPersonalExpenses = useCallback((memberId: string) => {
+    // Clean up previous listener
+    if (personalCleanupRef.current) {
+      personalCleanupRef.current();
+      personalCleanupRef.current = null;
+    }
+
+    if (demoMode || !groupId) {
+      setPersonalExpenses([]);
+      return () => {};
+    }
+
+    setPersonalExpensesLoading(true);
+
+    const itemsRef = collection(db, 'groups', groupId, 'personalExpenses', memberId, 'items');
+    const itemsQuery = query(itemsRef, orderBy('date', 'desc'));
+    const unsub = onSnapshot(itemsQuery, (snap) => {
+      const items: PersonalExpense[] = [];
+      snap.forEach((d) => {
+        const data = d.data();
+        items.push({
+          id: d.id,
+          amount: normalizeMinorAmount(data.amount),
+          description: data.description,
+          category: data.category as CategoryType,
+          date: data.date,
+          createdAt: data.createdAt,
+          visibility: data.visibility || 'private',
+        });
+      });
+      setPersonalExpenses(items);
+      setPersonalExpensesLoading(false);
+    });
+
+    personalCleanupRef.current = unsub;
+    return unsub;
+  }, [demoMode, groupId]);
+
+  // ── addPersonalExpense ──────────────────────────────────────────────
+  const addPersonalExpense = useCallback((memberId: string, exp: PersonalExpense) => {
+    const withCreatedAt = {
+      ...exp,
+      amount: normalizeMinorAmount(exp.amount),
+      createdAt: exp.createdAt || new Date().toISOString(),
+    };
+
+    if (demoMode || !groupId) {
+      setPersonalExpenses(prev => [withCreatedAt, ...prev]);
+    } else {
+      const itemsRef = collection(db, 'groups', groupId, 'personalExpenses', memberId, 'items');
+      const { id: _id, ...data } = withCreatedAt;
+      addDoc(itemsRef, data).catch((err) => {
+        console.error('Failed to add personal expense:', err);
+        showToast('error', t.errors.addExpenseFailed);
+      });
+    }
+  }, [demoMode, groupId, showToast, t]);
+
+  // ── deletePersonalExpense ───────────────────────────────────────────
+  const deletePersonalExpense = useCallback((memberId: string, expenseId: string) => {
+    if (demoMode || !groupId) {
+      setPersonalExpenses(prev => prev.filter(e => e.id !== expenseId));
+    } else {
+      const expDocRef = doc(db, 'groups', groupId, 'personalExpenses', memberId, 'items', expenseId);
+      deleteDoc(expDocRef).catch((err) => {
+        console.error('Failed to delete personal expense:', err);
+        showToast('error', t.errors.deleteExpenseFailed);
+      });
+    }
+  }, [demoMode, groupId, showToast, t]);
+
+  // ── updatePersonalExpense ───────────────────────────────────────────
+  const updatePersonalExpense = useCallback((memberId: string, exp: PersonalExpense) => {
+    const normalized = { ...exp, amount: normalizeMinorAmount(exp.amount) };
+    if (demoMode || !groupId) {
+      setPersonalExpenses(prev => prev.map(e => e.id === normalized.id ? normalized : e));
+    } else {
+      const expDocRef = doc(db, 'groups', groupId, 'personalExpenses', memberId, 'items', normalized.id);
+      const { id: _id, ...data } = normalized;
+      updateDoc(expDocRef, data).catch((err) => {
+        console.error('Failed to update personal expense:', err);
+        showToast('error', t.errors.updateExpenseFailed);
+      });
+    }
+  }, [demoMode, groupId, showToast, t]);
+
   // ── Dark mode side effect ──────────────────────────────────────────
   useEffect(() => {
     if (darkMode) {
@@ -437,6 +536,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => {
       if (cleanupRef.current) {
         cleanupRef.current();
+      }
+      if (personalCleanupRef.current) {
+        personalCleanupRef.current();
       }
     };
   }, []);
@@ -764,6 +866,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unreadCount, markAllRead,
       notifications, toggleNotifications,
       savedGroups, switchGroup, leaveCurrentGroup,
+      personalExpenses, loadPersonalExpenses, addPersonalExpense,
+      deletePersonalExpense, updatePersonalExpense, personalExpensesLoading,
     }}>
       {children}
     </AppContext.Provider>
