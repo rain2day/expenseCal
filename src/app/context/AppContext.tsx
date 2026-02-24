@@ -19,10 +19,11 @@ import {
   computeFundBalance,
   FUND_PAYER_ID,
   CONTRIBUTIONS,
+  GROUP_BUYS,
   formatAmount,
   normalizeMinorAmount,
 } from '../data/sampleData';
-import type { Settlement, CategoryType, Contribution, PersonalExpense } from '../data/sampleData';
+import type { Settlement, CategoryType, Contribution, PersonalExpense, GroupBuy } from '../data/sampleData';
 
 interface Toast {
   id: string;
@@ -87,6 +88,13 @@ interface AppContextValue {
   deletePersonalExpense: (memberId: string, expenseId: string) => void;
   updatePersonalExpense: (memberId: string, exp: PersonalExpense) => void;
   personalExpensesLoading: boolean;
+  // Group buys
+  groupBuys: GroupBuy[];
+  groupBuysLoading: boolean;
+  loadGroupBuys: () => (() => void);
+  addGroupBuy: (gb: Omit<GroupBuy, 'id' | 'createdAt'>) => Promise<void>;
+  deleteGroupBuy: (gbId: string) => void;
+  toggleGroupBuySettlement: (gbId: string, memberId: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -130,6 +138,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [personalExpenses, setPersonalExpenses] = useState<PersonalExpense[]>([]);
   const [personalExpensesLoading, setPersonalExpensesLoading] = useState(false);
   const personalCleanupRef = useRef<(() => void) | null>(null);
+
+  // ── Group buys (lazy loaded) ──────────────────────────────────────
+  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>(demoMode ? GROUP_BUYS : []);
+  const [groupBuysLoading, setGroupBuysLoading] = useState(false);
+  const groupBuysCleanupRef = useRef<(() => void) | null>(null);
 
   // ── Saved groups (multi-group support) ────────────────────────────
   const [savedGroups, setSavedGroups] = useState<Array<{ id: string; name: string }>>(() => {
@@ -396,6 +409,109 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [demoMode, groupId, showToast, t]);
 
+  // ── loadGroupBuys (lazy, called from GroupBuy page) ────────────────
+  const loadGroupBuys = useCallback(() => {
+    if (groupBuysCleanupRef.current) groupBuysCleanupRef.current();
+
+    if (demoMode || !groupId) {
+      setGroupBuysLoading(false);
+      return () => {};
+    }
+
+    setGroupBuysLoading(true);
+    const gbRef = collection(db, 'groups', groupId, 'groupBuys');
+    const q = query(gbRef, orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as GroupBuy));
+      setGroupBuys(data);
+      setGroupBuysLoading(false);
+    });
+
+    groupBuysCleanupRef.current = unsub;
+    return unsub;
+  }, [demoMode, groupId]);
+
+  // ── addGroupBuy ───────────────────────────────────────────────────
+  const addGroupBuy = useCallback(async (gb: Omit<GroupBuy, 'id' | 'createdAt'>) => {
+    const createdAt = new Date().toISOString();
+    const id = `gb_${Date.now()}`;
+    const fullGb: GroupBuy = { ...gb, id, createdAt };
+
+    if (demoMode || !groupId) {
+      setGroupBuys(prev => [fullGb, ...prev]);
+      // Also add personal expenses for each item
+      for (const item of gb.items) {
+        const pe: PersonalExpense = {
+          id: `pe_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          amount: item.amount,
+          description: item.description,
+          category: item.category,
+          date: gb.date,
+          visibility: 'private',
+          groupBuyId: id,
+          createdAt,
+        };
+        addPersonalExpense(item.memberId, pe);
+      }
+    } else {
+      try {
+        const gbRef = collection(db, 'groups', groupId, 'groupBuys');
+        const { id: _id, ...data } = fullGb;
+        const docRef = await addDoc(gbRef, data);
+        const firestoreId = docRef.id;
+
+        for (const item of gb.items) {
+          const peData = {
+            amount: normalizeMinorAmount(item.amount),
+            description: item.description,
+            category: item.category,
+            date: gb.date,
+            visibility: 'private',
+            groupBuyId: firestoreId,
+            createdAt,
+          };
+          const itemsRef = collection(db, 'groups', groupId, 'personalExpenses', item.memberId, 'items');
+          await addDoc(itemsRef, peData);
+        }
+      } catch (err) {
+        console.error('Failed to add group buy:', err);
+        showToast('error', t.errors.addExpenseFailed);
+      }
+    }
+  }, [demoMode, groupId, showToast, t, addPersonalExpense]);
+
+  // ── deleteGroupBuy ────────────────────────────────────────────────
+  const deleteGroupBuy = useCallback((gbId: string) => {
+    if (demoMode || !groupId) {
+      setGroupBuys(prev => prev.filter(g => g.id !== gbId));
+    } else {
+      const gbDocRef = doc(db, 'groups', groupId, 'groupBuys', gbId);
+      deleteDoc(gbDocRef).catch((err) => {
+        console.error('Failed to delete group buy:', err);
+        showToast('error', t.errors.deleteExpenseFailed);
+      });
+    }
+  }, [demoMode, groupId, showToast, t]);
+
+  // ── toggleGroupBuySettlement ──────────────────────────────────────
+  const toggleGroupBuySettlement = useCallback((gbId: string, memberId: string) => {
+    if (demoMode || !groupId) {
+      setGroupBuys(prev => prev.map(g => {
+        if (g.id !== gbId) return g;
+        const done = !g.settlements[memberId];
+        return { ...g, settlements: { ...g.settlements, [memberId]: done } };
+      }));
+    } else {
+      const gbDocRef = doc(db, 'groups', groupId, 'groupBuys', gbId);
+      const gb = groupBuys.find(g => g.id === gbId);
+      if (!gb) return;
+      const done = !gb.settlements[memberId];
+      updateDoc(gbDocRef, { [`settlements.${memberId}`]: done }).catch((err) => {
+        console.error('Failed to toggle settlement:', err);
+      });
+    }
+  }, [demoMode, groupId, groupBuys]);
+
   // ── Firestore: load group with listeners ───────────────────────────
   const loadGroup = useCallback((gid: string) => {
     setIsLoading(true);
@@ -539,6 +655,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       if (personalCleanupRef.current) {
         personalCleanupRef.current();
+      }
+      if (groupBuysCleanupRef.current) {
+        groupBuysCleanupRef.current();
       }
     };
   }, []);
@@ -868,6 +987,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       savedGroups, switchGroup, leaveCurrentGroup,
       personalExpenses, loadPersonalExpenses, addPersonalExpense,
       deletePersonalExpense, updatePersonalExpense, personalExpensesLoading,
+      groupBuys, groupBuysLoading, loadGroupBuys,
+      addGroupBuy, deleteGroupBuy, toggleGroupBuySettlement,
     }}>
       {children}
     </AppContext.Provider>
