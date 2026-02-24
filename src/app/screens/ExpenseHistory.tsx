@@ -4,7 +4,8 @@ import { Search, SlidersHorizontal, Trash2, Pencil, ReceiptText, ChevronDown } f
 import { useApp } from '../context/AppContext';
 import { CategoryType, CATEGORY_CONFIG, FUND_PAYER_ID, splitAmountEvenly } from '../data/sampleData';
 import { CategoryIcon, MemberAvatar, StaggerContainer, StaggerItem } from '../components/SharedComponents';
-import { motion, AnimatePresence } from 'motion/react';
+import { SwipeableRow } from '../components/SwipeableRow';
+import { AnimatePresence, motion } from 'motion/react';
 import { useT } from '../i18n/I18nContext';
 import { Translations } from '../i18n/types';
 
@@ -127,103 +128,91 @@ export function ExpenseHistory() {
                 const isOpen = swipedId === exp.id;
 
                 return (
-                  <div key={exp.id} className="relative overflow-hidden">
-                    {/* Swipe action buttons */}
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.div
-                          initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-                          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                          className="absolute right-0 top-0 bottom-0 flex items-stretch z-10"
-                        >
+                  <SwipeableRow
+                    key={exp.id}
+                    isOpen={isOpen}
+                    onOpen={() => setSwipedId(exp.id)}
+                    onClose={() => setSwipedId(prev => prev === exp.id ? null : prev)}
+                    className={i < exps.length - 1 ? 'border-b border-border' : ''}
+                    actions={[
+                      {
+                        label: t.expenseHistory.editAction,
+                        icon: <Pencil size={16} strokeWidth={2} />,
+                        bgClass: 'bg-accent-bg',
+                        textClass: 'text-primary',
+                        onClick: () => navigate('/app/add-expense', { state: { editExpense: exp } }),
+                      },
+                      {
+                        label: t.expenseHistory.deleteAction,
+                        icon: <Trash2 size={16} strokeWidth={2} />,
+                        bgClass: 'bg-destructive/15',
+                        textClass: 'text-destructive',
+                        onClick: () => handleDelete(exp.id),
+                      },
+                    ]}
+                  >
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <CategoryIcon category={exp.category} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
+                          {isFundPaid && (
+                            <span className="text-[10px] bg-accent-bg text-primary px-1.5 py-0.5 rounded-full flex-shrink-0">{t.common.fund}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <p className="text-xs text-muted-foreground">
+                            {isFundPaid ? t.common.fundDeduct : `${t.common.by} ${payer?.name}`} ·
+                          </p>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate('/app/add-expense', { state: { editExpense: exp } });
+                              setExpandedId(expandedId === exp.id ? null : exp.id);
                             }}
-                            className="bg-accent-bg text-primary px-4 flex items-center gap-1 text-xs font-bold"
+                            className="text-xs text-primary flex items-center gap-0.5"
                           >
-                            <Pencil size={14} strokeWidth={2} />{t.expenseHistory.editAction}
+                            {t.common.splitAmong(exp.splitAmong.length)}
+                            <ChevronDown
+                              size={10}
+                              className={`transition-transform ${expandedId === exp.id ? 'rotate-180' : ''}`}
+                            />
                           </button>
-                          <button
-                            onClick={() => handleDelete(exp.id)}
-                            className="bg-destructive/20 text-destructive px-4 flex items-center gap-1 text-xs font-bold"
-                          >
-                            <Trash2 size={14} strokeWidth={2} />{t.expenseHistory.deleteAction}
-                          </button>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-black text-sm text-foreground tabular-nums">{fmt(exp.amount)}</p>
+                        <p className="text-xs text-muted-foreground tabular-nums">
+                          {t.common.perPerson} {perPersonMin === perPersonMax ? fmt(perPersonMin) : `${fmt(perPersonMin)}~${fmt(perPersonMax)}`}
+                        </p>
+                      </div>
+                    </div>
+                    {/* Split member details */}
+                    <AnimatePresence>
+                      {expandedId === exp.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-3 pt-0.5">
+                            <div className="flex flex-wrap gap-1.5">
+                              {exp.splitAmong.map(id => {
+                                const m = getMember(id);
+                                return m ? (
+                                  <div key={id} className="flex items-center gap-1 bg-secondary rounded-full pl-0.5 pr-2 py-0.5">
+                                    <MemberAvatar member={m} size="sm" />
+                                    <span className="text-[10px] text-muted-foreground">{m.name}</span>
+                                  </div>
+                                ) : null;
+                              })}
+                            </div>
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
-
-                    <motion.div
-                      animate={{ x: isOpen ? -120 : 0 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                      className={`cursor-pointer select-none ${i < exps.length - 1 ? 'border-b border-border' : ''}`}
-                      onClick={() => setSwipedId(isOpen ? null : exp.id)}
-                    >
-                      <div className="flex items-center gap-3 px-4 py-3">
-                        <CategoryIcon category={exp.category} size="md" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
-                            {isFundPaid && (
-                              <span className="text-[10px] bg-accent-bg text-primary px-1.5 py-0.5 rounded-full flex-shrink-0">{t.common.fund}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <p className="text-xs text-muted-foreground">
-                              {isFundPaid ? t.common.fundDeduct : `${t.common.by} ${payer?.name}`} ·
-                            </p>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedId(expandedId === exp.id ? null : exp.id);
-                              }}
-                              className="text-xs text-primary flex items-center gap-0.5"
-                            >
-                              {t.common.splitAmong(exp.splitAmong.length)}
-                              <ChevronDown
-                                size={10}
-                                className={`transition-transform ${expandedId === exp.id ? 'rotate-180' : ''}`}
-                              />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-black text-sm text-foreground tabular-nums">{fmt(exp.amount)}</p>
-                          <p className="text-xs text-muted-foreground tabular-nums">
-                            {t.common.perPerson} {perPersonMin === perPersonMax ? fmt(perPersonMin) : `${fmt(perPersonMin)}~${fmt(perPersonMax)}`}
-                          </p>
-                        </div>
-                      </div>
-                      {/* Split member details */}
-                      <AnimatePresence>
-                        {expandedId === exp.id && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-4 pb-3 pt-0.5">
-                              <div className="flex flex-wrap gap-1.5">
-                                {exp.splitAmong.map(id => {
-                                  const m = getMember(id);
-                                  return m ? (
-                                    <div key={id} className="flex items-center gap-1 bg-secondary rounded-full pl-0.5 pr-2 py-0.5">
-                                      <MemberAvatar member={m} size="sm" />
-                                      <span className="text-[10px] text-muted-foreground">{m.name}</span>
-                                    </div>
-                                  ) : null;
-                                })}
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  </div>
+                  </SwipeableRow>
                 );
               })}
             </div>

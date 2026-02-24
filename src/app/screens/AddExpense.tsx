@@ -13,12 +13,13 @@ export function AddExpense() {
   const navigate = useNavigate();
   const location = useLocation();
   const {
-    members, addExpense, updateExpense, addPersonalExpense,
+    members, addExpense, updateExpense, addPersonalExpense, updatePersonalExpense,
     showToast, currency, fundBalance, fmt,
   } = useApp();
   const { t } = useT();
 
   const editExpense = (location.state as any)?.editExpense as Expense | undefined;
+  const editPersonalExp = (location.state as any)?.editPersonalExpense as any | undefined;
   const scanData = (location.state as any)?.scanData as {
     amount: string | number;
     description: string;
@@ -26,21 +27,26 @@ export function AddExpense() {
     date: string;
   } | undefined;
   const isEdit = !!editExpense;
+  const isEditPersonal = !!editPersonalExp;
   const scannedAmountText = scanData?.amount !== undefined ? String(scanData.amount) : '';
 
   // Personal mode: passed via location.state from PersonalExpenses page
-  const personalModeDefault = !!(location.state as any)?.personalMode;
+  const personalModeDefault = !!(location.state as any)?.personalMode || isEditPersonal;
   const personalMemberId = (location.state as any)?.memberId as string | undefined;
 
   const [expenseType, setExpenseType] = useState<'group' | 'personal'>(
     personalModeDefault ? 'personal' : 'group'
   );
-  const [amount,      setAmount]      = useState(editExpense ? formatAmountInput(editExpense.amount, currency) : scannedAmountText);
-  const [description, setDescription] = useState(editExpense?.description ?? scanData?.description ?? '');
-  const [category,    setCategory]    = useState<CategoryType>(editExpense?.category ?? scanData?.category ?? 'food');
+  const [amount,      setAmount]      = useState(
+    editExpense ? formatAmountInput(editExpense.amount, currency)
+    : editPersonalExp ? formatAmountInput(editPersonalExp.amount, currency)
+    : scannedAmountText
+  );
+  const [description, setDescription] = useState(editExpense?.description ?? editPersonalExp?.description ?? scanData?.description ?? '');
+  const [category,    setCategory]    = useState<CategoryType>(editExpense?.category ?? editPersonalExp?.category ?? scanData?.category ?? 'food');
   const [paidBy,      setPaidBy]      = useState(editExpense?.paidBy ?? FUND_PAYER_ID);
   const [splitAmong,  setSplitAmong]  = useState<string[]>(editExpense?.splitAmong ?? members.map(m => m.id));
-  const [date,        setDate]        = useState(editExpense?.date ?? scanData?.date ?? new Date().toISOString().split('T')[0]);
+  const [date,        setDate]        = useState(editExpense?.date ?? editPersonalExp?.date ?? scanData?.date ?? new Date().toISOString().split('T')[0]);
   const lastPayerTapRef = useRef(0);
 
   // Personal-mode specific state
@@ -71,15 +77,27 @@ export function AddExpense() {
         showToast('error', t.addExpense.errorRequired);
         return;
       }
-      addPersonalExpense(personalFor, {
-        id: `pe_${Date.now()}`,
-        amount: amt,
-        description: description.trim(),
-        category,
-        date,
-        visibility: 'private',
-      });
-      showToast('success', t.addExpense.addedPersonal);
+      if (isEditPersonal && editPersonalExp) {
+        updatePersonalExpense(personalFor, {
+          ...editPersonalExp,
+          amount: amt,
+          description: description.trim(),
+          category,
+          date,
+          visibility: editPersonalExp.visibility ?? 'private',
+        });
+        showToast('success', t.addExpense.updatedExpense);
+      } else {
+        addPersonalExpense(personalFor, {
+          id: `pe_${Date.now()}`,
+          amount: amt,
+          description: description.trim(),
+          category,
+          date,
+          visibility: 'private',
+        });
+        showToast('success', t.addExpense.addedPersonal);
+      }
       navigate(-1);
       return;
     }
@@ -138,7 +156,7 @@ export function AddExpense() {
     >
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="shrink-0 bg-sidebar px-4 pt-header pb-4 border-b border-border flex items-center justify-between lg:pt-6">
-        <h1 className="text-lg font-black text-foreground">{isEdit ? t.addExpense.titleEdit : t.addExpense.titleNew}</h1>
+        <h1 className="text-lg font-black text-foreground">{isEdit || isEditPersonal ? t.addExpense.titleEdit : t.addExpense.titleNew}</h1>
         <button
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground active:scale-90 transition-transform"
@@ -155,7 +173,7 @@ export function AddExpense() {
         <StaggerContainer className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
           {/* Type toggle: group / personal (hide during edit) */}
-          {!isEdit && (
+          {!isEdit && !isEditPersonal && (
             <StaggerItem>
             <div className="flex gap-1 bg-secondary rounded-xl p-1">
               <button
@@ -376,7 +394,7 @@ export function AddExpense() {
             className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-colors active:scale-98"
           >
             <Check size={18} strokeWidth={2.5} />
-            {isEdit ? t.addExpense.saveEdit : t.addExpense.saveNew}
+            {isEdit || isEditPersonal ? t.addExpense.saveEdit : t.addExpense.saveNew}
           </button>
         </div>
       </div>

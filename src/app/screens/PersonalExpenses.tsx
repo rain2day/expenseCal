@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, ArrowLeft, Trash2 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { Plus, ArrowLeft, Trash2, Pencil } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { CategoryType } from '../data/sampleData';
 import { CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
+import { SwipeableRow } from '../components/SwipeableRow';
 
 const CATEGORY_COLORS: Record<CategoryType, string> = {
   food: '#DD843C',
@@ -27,8 +27,7 @@ export function PersonalExpenses() {
   } = useApp();
   const { t } = useT();
   const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [editingExpense, setEditingExpense] = useState<string | null>(null);
+  const [swipedId, setSwipedId] = useState<string | null>(null);
 
   const member = memberId ? getMember(memberId) : undefined;
 
@@ -146,64 +145,44 @@ export function PersonalExpenses() {
               personalExpenses.map(exp => (
                 <StaggerItem key={exp.id}>
                   <div className="bg-card border border-border rounded-2xl overflow-hidden">
-                    <div
-                      className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-secondary transition-colors"
-                      onClick={() => setEditingExpense(editingExpense === exp.id ? null : exp.id)}
+                    <SwipeableRow
+                      isOpen={swipedId === exp.id}
+                      onOpen={() => setSwipedId(exp.id)}
+                      onClose={() => setSwipedId(prev => prev === exp.id ? null : prev)}
+                      actions={[
+                        {
+                          label: t.common.edit,
+                          icon: <Pencil size={16} strokeWidth={2} />,
+                          bgClass: 'bg-accent-bg',
+                          textClass: 'text-primary',
+                          onClick: () => navigate('/app/add-expense', {
+                            state: { personalMode: true, memberId, editPersonalExpense: exp },
+                          }),
+                        },
+                        {
+                          label: t.common.delete,
+                          icon: <Trash2 size={16} strokeWidth={2} />,
+                          bgClass: 'bg-destructive/15',
+                          textClass: 'text-destructive',
+                          onClick: () => {
+                            if (memberId) {
+                              deletePersonalExpense(memberId, exp.id);
+                              showToast('success', t.personal.deleted);
+                            }
+                            setSwipedId(null);
+                          },
+                        },
+                      ]}
                     >
-                      <CategoryIcon category={exp.category} size="md" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
-                        <p className="text-xs text-muted-foreground">{exp.date}</p>
+                      <div className="flex items-center gap-3 px-4 py-3">
+                        <CategoryIcon category={exp.category} size="md" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{exp.description}</p>
+                          <p className="text-xs text-muted-foreground">{exp.date}</p>
+                        </div>
+                        <span className="font-black text-sm tabular-nums text-foreground">{fmt(exp.amount)}</span>
                       </div>
-                      <span className="font-black text-sm tabular-nums text-foreground">{fmt(exp.amount)}</span>
-                    </div>
-
-                    {/* Expanded: delete action */}
-                    <AnimatePresence initial={false}>
-                      {editingExpense === exp.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ height: { duration: 0.25 }, opacity: { duration: 0.15 } }}
-                          className="overflow-hidden"
-                        >
-                          <div className="border-t border-border px-4 py-2.5 bg-sidebar flex justify-end gap-2">
-                            {confirmDelete === exp.id ? (
-                              <>
-                                <span className="flex-1 text-xs text-destructive self-center">{t.personal.deleteConfirm}</span>
-                                <button
-                                  onClick={() => {
-                                    if (memberId) {
-                                      deletePersonalExpense(memberId, exp.id);
-                                      showToast('success', t.personal.deleted);
-                                    }
-                                    setConfirmDelete(null);
-                                    setEditingExpense(null);
-                                  }}
-                                  className="px-3 py-1.5 bg-destructive text-white text-xs font-bold rounded-lg active:scale-95 transition-transform"
-                                >
-                                  {t.common.confirm}
-                                </button>
-                                <button
-                                  onClick={() => setConfirmDelete(null)}
-                                  className="px-3 py-1.5 bg-secondary text-muted-foreground text-xs font-bold rounded-lg active:scale-95 transition-transform"
-                                >
-                                  {t.common.cancel}
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                onClick={() => setConfirmDelete(exp.id)}
-                                className="flex items-center gap-1.5 text-xs text-destructive/70 active:text-destructive transition-colors"
-                              >
-                                <Trash2 size={13} strokeWidth={2} /> {t.common.delete}
-                              </button>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    </SwipeableRow>
                   </div>
                 </StaggerItem>
               ))
