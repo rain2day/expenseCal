@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Check, PartyPopper, Wallet, Trash2, ChevronDown, ChevronUp, CreditCard } from 'lucide-react';
+import { Check, PartyPopper, Wallet, Trash2, ChevronDown, ChevronUp, CreditCard, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { MemberAvatar, BalanceBadge, StaggerContainer, StaggerItem, CategoryIcon } from '../components/SharedComponents';
@@ -34,11 +34,65 @@ function Confetti() {
 
 export function Settlement() {
   const { t } = useT();
-  const { balances, settlements, setSettlements, groupName, showToast, fundBalance, totalContributions, getMember, fmt, contributions, deleteContribution, expenses } = useApp();
+  const { balances, settlements, setSettlements, groupName, showToast, fundBalance, totalContributions, getMember, fmt, contributions, deleteContribution, expenses, groupBuys, loadGroupBuys, toggleGroupBuySettlement } = useApp();
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContribHistory, setShowContribHistory] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [showAdvanceHistory, setShowAdvanceHistory] = useState(false);
+  const [showGroupBuyDebts, setShowGroupBuyDebts] = useState(true);
+
+  // Lazy-load group buys
+  useEffect(() => {
+    const cleanup = loadGroupBuys();
+    return cleanup;
+  }, [loadGroupBuys]);
+
+  // Compute group buy debts: who owes whom how much
+  const groupBuyDebts = useMemo(() => {
+    const debts: Array<{
+      gbId: string;
+      gbTitle: string;
+      debtorId: string;
+      debtorName: string;
+      creditorId: string;
+      creditorName: string;
+      amount: number;
+      isSettled: boolean;
+      date: string;
+    }> = [];
+
+    groupBuys.forEach(gb => {
+      const payer = getMember(gb.payerId);
+      if (!payer) return;
+      // Sum items per non-payer member
+      const memberTotals = new Map<string, number>();
+      gb.items.forEach(item => {
+        if (item.memberId !== gb.payerId) {
+          memberTotals.set(item.memberId, (memberTotals.get(item.memberId) || 0) + item.amount);
+        }
+      });
+      memberTotals.forEach((amount, memberId) => {
+        const debtor = getMember(memberId);
+        if (!debtor) return;
+        debts.push({
+          gbId: gb.id,
+          gbTitle: gb.title,
+          debtorId: memberId,
+          debtorName: debtor.name,
+          creditorId: gb.payerId,
+          creditorName: payer.name,
+          amount,
+          isSettled: gb.settlements[memberId] === true,
+          date: gb.date,
+        });
+      });
+    });
+
+    return debts;
+  }, [groupBuys, getMember]);
+
+  const unsettledDebts = groupBuyDebts.filter(d => !d.isSettled);
+  const settledDebts = groupBuyDebts.filter(d => d.isSettled);
 
   const advancePayments = useMemo(() =>
     expenses.filter(exp => exp.paidBy !== FUND_PAYER_ID),
@@ -399,6 +453,105 @@ export function Settlement() {
                   </motion.div>
                 );
               })}
+            </div>
+          </StaggerItem>
+        )}
+
+        {/* ── Group Buy Debts (搭單還款) ─────────────────────────── */}
+        {groupBuyDebts.length > 0 && (
+          <StaggerItem>
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setShowGroupBuyDebts(v => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <ShoppingBag size={14} className="text-info" strokeWidth={2} />
+                  <span className="text-sm font-bold text-foreground">{t.groupBuy.title}{t.settlement.transferTo ? '' : ''}</span>
+                  {unsettledDebts.length > 0 && (
+                    <span className="text-[10px] bg-warning-bg text-warning px-1.5 py-0.5 rounded-md font-bold">
+                      {unsettledDebts.length} {t.groupBuy.unpaid}
+                    </span>
+                  )}
+                </div>
+                {showGroupBuyDebts
+                  ? <ChevronUp size={14} className="text-subtle" />
+                  : <ChevronDown size={14} className="text-subtle" />
+                }
+              </button>
+              <AnimatePresence>
+                {showGroupBuyDebts && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="border-t border-border">
+                      {/* Unsettled debts first */}
+                      {unsettledDebts.map((d, i) => {
+                        const debtor = getMember(d.debtorId);
+                        const creditor = getMember(d.creditorId);
+                        return (
+                          <div
+                            key={`${d.gbId}-${d.debtorId}`}
+                            className={`flex items-center gap-3 px-4 py-2.5 ${i < unsettledDebts.length - 1 || settledDebts.length > 0 ? 'border-b border-border' : ''}`}
+                          >
+                            {debtor && <MemberAvatar member={debtor} size="sm" />}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">
+                                {t.groupBuy.owes(d.debtorName, d.creditorName, fmt(d.amount))}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {d.gbTitle} · {d.date}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                toggleGroupBuySettlement(d.gbId, d.debtorId);
+                                showToast('success', t.groupBuy.markPaid);
+                              }}
+                              className="text-[10px] bg-accent-bg text-primary px-2.5 py-1.5 rounded-lg font-bold shrink-0 active:scale-95 transition-transform"
+                            >
+                              {t.groupBuy.markPaid}
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {/* Settled debts */}
+                      {settledDebts.map((d, i) => {
+                        const debtor = getMember(d.debtorId);
+                        return (
+                          <div
+                            key={`${d.gbId}-${d.debtorId}`}
+                            className={`flex items-center gap-3 px-4 py-2.5 opacity-45 ${i < settledDebts.length - 1 ? 'border-b border-border' : ''}`}
+                          >
+                            {debtor && <MemberAvatar member={debtor} size="sm" />}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">
+                                {t.groupBuy.owes(d.debtorName, d.creditorName, fmt(d.amount))}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {d.gbTitle} · {d.date}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                toggleGroupBuySettlement(d.gbId, d.debtorId);
+                                showToast('info', t.groupBuy.markUnpaid);
+                              }}
+                              className="text-[10px] bg-success-bg text-success px-2.5 py-1.5 rounded-lg font-bold shrink-0 active:scale-95 transition-transform flex items-center gap-0.5"
+                            >
+                              <Check size={10} strokeWidth={2.5} /> {t.groupBuy.paid}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </StaggerItem>
         )}
