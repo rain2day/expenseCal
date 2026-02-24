@@ -384,8 +384,64 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [demoMode, groupId, showToast, t]);
 
+  // ── helper: sync GroupBuy item when personal expense changes ────────
+  const syncGroupBuyItem = useCallback((
+    memberId: string,
+    oldPe: PersonalExpense | undefined,
+    action: 'update' | 'delete',
+    newPe?: PersonalExpense,
+  ) => {
+    const gbId = (newPe || oldPe)?.groupBuyId;
+    if (!gbId) return;
+    const gb = groupBuys.find(g => g.id === gbId);
+    if (!gb) return;
+
+    let newItems: typeof gb.items;
+    if (action === 'delete') {
+      // Remove matching item from group buy
+      const idx = gb.items.findIndex(i =>
+        i.memberId === memberId &&
+        (!oldPe || (i.description === oldPe.description && i.amount === oldPe.amount))
+      );
+      if (idx === -1) return;
+      newItems = gb.items.filter((_, i) => i !== idx);
+    } else {
+      // Update matching item in group buy
+      if (!newPe) return;
+      let matched = false;
+      newItems = gb.items.map(item => {
+        if (matched || item.memberId !== memberId) return item;
+        // Match by old description+amount, or if member has only one item
+        const memberItems = gb.items.filter(i => i.memberId === memberId);
+        if (memberItems.length === 1 || (oldPe && item.description === oldPe.description && item.amount === oldPe.amount)) {
+          matched = true;
+          return { ...item, amount: newPe.amount, description: newPe.description, category: newPe.category };
+        }
+        return item;
+      });
+      if (!matched) return;
+    }
+
+    if (demoMode || !groupId) {
+      if (newItems.length === 0) {
+        setGroupBuys(prev => prev.filter(g => g.id !== gbId));
+      } else {
+        setGroupBuys(prev => prev.map(g => g.id === gbId ? { ...g, items: newItems } : g));
+      }
+    } else {
+      const gbDocRef = doc(db, 'groups', groupId, 'groupBuys', gbId);
+      if (newItems.length === 0) {
+        deleteDoc(gbDocRef).catch(err => console.error('Failed to delete empty group buy:', err));
+      } else {
+        updateDoc(gbDocRef, { items: newItems }).catch(err => console.error('Failed to sync group buy item:', err));
+      }
+    }
+  }, [demoMode, groupId, groupBuys]);
+
   // ── deletePersonalExpense ───────────────────────────────────────────
   const deletePersonalExpense = useCallback((memberId: string, expenseId: string) => {
+    const oldPe = personalExpenses.find(e => e.id === expenseId);
+
     if (demoMode || !groupId) {
       setPersonalExpenses(prev => prev.filter(e => e.id !== expenseId));
     } else {
@@ -395,11 +451,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('error', t.errors.deleteExpenseFailed);
       });
     }
-  }, [demoMode, groupId, showToast, t]);
+
+    // Sync: also remove item from GroupBuy
+    if (oldPe?.groupBuyId) {
+      syncGroupBuyItem(memberId, oldPe, 'delete');
+    }
+  }, [demoMode, groupId, showToast, t, personalExpenses, syncGroupBuyItem]);
 
   // ── updatePersonalExpense ───────────────────────────────────────────
   const updatePersonalExpense = useCallback((memberId: string, exp: PersonalExpense) => {
     const normalized = { ...exp, amount: normalizeMinorAmount(exp.amount) };
+    const oldPe = personalExpenses.find(e => e.id === normalized.id);
+
     if (demoMode || !groupId) {
       setPersonalExpenses(prev => prev.map(e => e.id === normalized.id ? normalized : e));
     } else {
@@ -410,7 +473,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showToast('error', t.errors.updateExpenseFailed);
       });
     }
-  }, [demoMode, groupId, showToast, t]);
+
+    // Sync: also update item in GroupBuy
+    if (normalized.groupBuyId) {
+      syncGroupBuyItem(memberId, oldPe, 'update', normalized);
+    }
+  }, [demoMode, groupId, showToast, t, personalExpenses, syncGroupBuyItem]);
 
   // ── loadGroupBuys (lazy, called from GroupBuy page) ────────────────
   const loadGroupBuys = useCallback(() => {
