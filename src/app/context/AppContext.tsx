@@ -139,11 +139,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [personalExpensesLoading, setPersonalExpensesLoading] = useState(false);
   const personalCleanupRef = useRef<(() => void) | null>(null);
 
-  // ── Group buys (lazy loaded) ──────────────────────────────────────
-  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>(demoMode ? GROUP_BUYS : []);
-  const [groupBuysLoading, setGroupBuysLoading] = useState(false);
-  const groupBuysCleanupRef = useRef<(() => void) | null>(null);
-
   // ── Saved groups (multi-group support) ────────────────────────────
   const [savedGroups, setSavedGroups] = useState<Array<{ id: string; name: string }>>(() => {
     try {
@@ -161,6 +156,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Actual demo mode gets explicitly set via enterDemoMode
     return !localStorage.getItem('gcd-groupId');
   });
+
+  // ── Group buys (lazy loaded) ──────────────────────────────────────
+  // Must be after demoMode declaration to avoid TDZ
+  const [groupBuys, setGroupBuys] = useState<GroupBuy[]>(demoMode ? GROUP_BUYS : []);
+  const [groupBuysLoading, setGroupBuysLoading] = useState(false);
+  const groupBuysCleanupRef = useRef<(() => void) | null>(null);
+
   const [isLoading, setIsLoading] = useState(hasStoredGroup);
 
   // ── Notification state ─────────────────────────────────────────────
