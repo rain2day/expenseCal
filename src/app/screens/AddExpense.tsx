@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { X, Calendar, Check, Wallet, Lock } from 'lucide-react';
+import { X, Calendar, Check, Wallet, Lock, ShoppingBag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
@@ -197,6 +197,13 @@ export function AddExpense() {
               >
                 <Lock size={14} strokeWidth={2} />
                 {t.addExpense.typePersonal}
+              </button>
+              <button
+                onClick={() => navigate('/app/group-buy', { replace: true })}
+                className="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors text-muted-foreground"
+              >
+                <ShoppingBag size={14} strokeWidth={2} />
+                {t.groupBuy.title}
               </button>
             </div>
             </StaggerItem>
