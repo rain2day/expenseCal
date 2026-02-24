@@ -45,41 +45,31 @@
     <mask id="mr"><rect x="69" y="0" width="51" height="120" fill="white"/></mask>
 
     <!-- Ambient glow blobs -->
-    <radialGradient id="gr1" cx="85%" cy="18%" r="42%">
-      <stop offset="0%" stop-color="rgba(59,91,165,0.15)"/>
+    <radialGradient id="gr1" cx="75%" cy="20%" r="40%">
+      <stop offset="0%" stop-color="rgba(59,91,165,0.12)"/>
       <stop offset="100%" stop-color="rgba(59,91,165,0)"/>
     </radialGradient>
-    <radialGradient id="gr2" cx="10%" cy="85%" r="38%">
-      <stop offset="0%" stop-color="rgba(30,58,110,0.12)"/>
+    <radialGradient id="gr2" cx="25%" cy="80%" r="40%">
+      <stop offset="0%" stop-color="rgba(30,58,110,0.10)"/>
       <stop offset="100%" stop-color="rgba(30,58,110,0)"/>
     </radialGradient>
 
-    <!-- Vertical divider fade -->
-    <linearGradient id="divider-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="rgba(59,91,165,0)"/>
-      <stop offset="25%" stop-color="rgba(59,91,165,0.3)"/>
-      <stop offset="75%" stop-color="rgba(59,91,165,0.3)"/>
-      <stop offset="100%" stop-color="rgba(59,91,165,0)"/>
-    </linearGradient>
-
-    <!-- Accent underline -->
+    <!-- Centred accent underline -->
     <linearGradient id="accent-line" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#3B5BA5"/>
-      <stop offset="60%" stop-color="rgba(59,91,165,0.3)"/>
+      <stop offset="0%" stop-color="rgba(59,91,165,0)"/>
+      <stop offset="30%" stop-color="#3B5BA5"/>
+      <stop offset="70%" stop-color="#3B5BA5"/>
       <stop offset="100%" stop-color="rgba(59,91,165,0)"/>
     </linearGradient>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <ellipse cx="1050" cy="110" rx="380" ry="260" fill="url(#gr1)" transform="rotate(-22 1050 110)"/>
-  <ellipse cx="120" cy="530" rx="310" ry="220" fill="url(#gr2)" transform="rotate(18 120 530)"/>
+  <ellipse cx="900" cy="120" rx="380" ry="260" fill="url(#gr1)" transform="rotate(-18 900 120)"/>
+  <ellipse cx="300" cy="510" rx="310" ry="220" fill="url(#gr2)" transform="rotate(18 300 510)"/>
 
-  <!-- Outer glow ring around mark -->
-  <circle cx="242" cy="315" r="162" fill="none" stroke="rgba(59,91,165,0.15)" stroke-width="2"/>
-
-  <!-- Mark (centred left) -->
-  <svg x="92" y="165" width="300" height="300" viewBox="0 0 120 120" overflow="visible">
+  <!-- Mark (centred, large) -->
+  <svg x="450" y="50" width="300" height="300" viewBox="0 0 120 120" overflow="visible">
     <rect width="120" height="120" rx="26" fill="#0D1526" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
     <path d="M 17.83,50.67 L 36.17,21.33 Q 42,12 47.83,21.33 L 66.17,50.67 Q 72,60 66.17,69.33 L 47.83,98.67 Q 42,108 36.17,98.67 L 17.83,69.33 Q 12,60 17.83,50.67 Z" fill="url(#f1)" stroke="rgba(255,255,255,0.07)" stroke-width="1" filter="url(#shadow)"/>
     <path d="M 35.83,50.67 L 54.17,21.33 Q 60,12 65.83,21.33 L 84.17,50.67 Q 90,60 84.17,69.33 L 65.83,98.67 Q 60,108 54.17,98.67 L 35.83,69.33 Q 30,60 35.83,50.67 Z" fill="url(#f2)" stroke="rgba(255,255,255,0.13)" stroke-width="1" filter="url(#shadow)"/>
@@ -89,58 +79,45 @@
     <text clip-path="url(#c3)" mask="url(#mr)" x="60" y="60" text-anchor="middle" dominant-baseline="central" font-size="58" font-weight="800" font-family="'Inter','Helvetica Neue',Arial Black,sans-serif" fill="rgba(140,175,255,0.48)">$</text>
   </svg>
 
-  <!-- Vertical divider -->
-  <line x1="462" y1="0" x2="462" y2="630" stroke="url(#divider-grad)" stroke-width="1.5"/>
-
-  <!-- App name (Chinese) -->
-  <text x="516" y="272"
+  <!-- App name (Chinese, centred) -->
+  <text x="600" y="420"
+    text-anchor="middle"
     font-family="'Noto Sans TC','PingFang TC','Microsoft JhengHei','Heiti TC',sans-serif"
     font-size="82" font-weight="700" letter-spacing="-1"
     fill="#EAEDFF">旅行公費</text>
 
-  <!-- English label -->
-  <text x="520" y="318"
-    font-family="'Inter','SF Pro Display','Helvetica Neue',Arial,sans-serif"
-    font-size="22" font-weight="300" letter-spacing="6"
-    fill="rgba(163,172,255,0.65)">SPLITRIP</text>
+  <!-- Accent underline (centred) -->
+  <line x1="350" y1="445" x2="850" y2="445" stroke="url(#accent-line)" stroke-width="1.5"/>
 
-  <!-- Accent underline -->
-  <line x1="516" y1="342" x2="1050" y2="342" stroke="url(#accent-line)" stroke-width="1.5"/>
-
-  <!-- Tagline -->
-  <text x="516" y="408"
+  <!-- Tagline (centred) -->
+  <text x="600" y="490"
+    text-anchor="middle"
     font-family="'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif"
-    font-size="36" font-weight="500"
-    fill="rgba(234,237,255,0.88)">輕鬆計公數，朋友唔鬧交</text>
+    font-size="32" font-weight="400"
+    fill="rgba(234,237,255,0.70)">輕鬆計公數，朋友唔鬧交</text>
 
-  <!-- Feature pills -->
-  <rect x="516" y="444" width="138" height="38" rx="19"
+  <!-- Feature pills (centred row) -->
+  <rect x="370" y="520" width="130" height="36" rx="18"
     fill="rgba(59,91,165,0.18)" stroke="rgba(59,91,165,0.36)" stroke-width="1"/>
-  <text x="585" y="469"
+  <text x="435" y="543"
     font-family="'Noto Sans TC',sans-serif"
-    font-size="18" text-anchor="middle"
+    font-size="16" text-anchor="middle"
     fill="rgba(160,190,255,0.8)">多幣種支援</text>
 
-  <rect x="668" y="444" width="138" height="38" rx="19"
+  <rect x="518" y="520" width="116" height="36" rx="18"
     fill="rgba(163,172,255,0.10)" stroke="rgba(163,172,255,0.22)" stroke-width="1"/>
-  <text x="737" y="469"
+  <text x="576" y="543"
     font-family="'Noto Sans TC',sans-serif"
-    font-size="18" text-anchor="middle"
+    font-size="16" text-anchor="middle"
     fill="rgba(163,172,255,0.80)">行程記帳</text>
 
-  <rect x="820" y="444" width="122" height="38" rx="19"
+  <rect x="652" y="520" width="116" height="36" rx="18"
     fill="rgba(163,172,255,0.10)" stroke="rgba(163,172,255,0.22)" stroke-width="1"/>
-  <text x="881" y="469"
+  <text x="710" y="543"
     font-family="'Noto Sans TC',sans-serif"
-    font-size="18" text-anchor="middle"
+    font-size="16" text-anchor="middle"
     fill="rgba(163,172,255,0.80)">即時結算</text>
 
-  <!-- Brand watermark -->
-  <text x="1120" y="590"
-    font-family="'Inter',system-ui,sans-serif"
-    font-size="14" text-anchor="end" letter-spacing="3"
-    fill="rgba(152,160,200,0.25)">SPLITRIP</text>
-
   <!-- Bottom border accent -->
-  <rect x="0" y="622" width="1200" height="8" rx="0" fill="url(#accent-line)" opacity="0.5"/>
+  <rect x="0" y="622" width="1200" height="8" rx="0" fill="url(#accent-line)" opacity="0.4"/>
 </svg>
