@@ -451,6 +451,7 @@ export const ja: Translations = {
     unpaid: '未返済',
     allSettled: '全額返済済み 🎉',
     groupBuyTag: '共同購入',
+    sharedWith: (names: string) => `${names} と共同購入`,
     history: '共同購入履歴',
     noGroupBuys: '共同購入の記録はありません',
     deleteConfirm: 'この共同購入を削除しますか？関連する個人支出は削除されません。',

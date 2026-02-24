@@ -437,6 +437,7 @@ export interface Translations {
     unpaid: string;
     allSettled: string;
     groupBuyTag: string;
+    sharedWith: (names: string) => string;
     history: string;
     noGroupBuys: string;
     deleteConfirm: string;

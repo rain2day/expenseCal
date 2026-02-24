@@ -451,6 +451,7 @@ export const zh: Translations = {
     unpaid: '未還',
     allSettled: '全部已還清 🎉',
     groupBuyTag: '搭單',
+    sharedWith: (names: string) => `跟 ${names} 搭單`,
     history: '搭單記錄',
     noGroupBuys: '暫無搭單記錄',
     deleteConfirm: '確定要刪除此搭單？相關個人消費不會被刪除。',

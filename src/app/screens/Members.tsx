@@ -15,6 +15,7 @@ export function Members() {
   const {
     balances, expenses, showToast, groupName, groupId, deleteMember, addMember, members, fmt,
     personalExpenses, loadPersonalExpenses, personalExpensesLoading, deletePersonalExpense,
+    groupBuys, loadGroupBuys,
   } = useApp();
   const { t } = useT();
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -31,6 +32,12 @@ export function Members() {
     const cleanup = loadPersonalExpenses(expanded);
     return cleanup;
   }, [expanded, loadPersonalExpenses]);
+
+  // Load group buys for 搭單 tag display
+  useEffect(() => {
+    const cleanup = loadGroupBuys();
+    return cleanup;
+  }, [loadGroupBuys]);
 
   function handleAddMember() {
     const name = newMemberName.trim();
@@ -227,7 +234,14 @@ export function Members() {
                                   >
                                     <div className="flex items-center gap-2 px-3 py-2 bg-card">
                                       <CategoryIcon category={pe.category as CategoryType} size="sm" />
-                                      <span className="flex-1 text-xs text-muted-foreground truncate">{pe.description}</span>
+                                      <div className="flex-1 min-w-0 flex items-center gap-1">
+                                        <span className="text-xs text-muted-foreground truncate">{pe.description}</span>
+                                        {pe.groupBuyId && groupBuys.some(g => g.id === pe.groupBuyId) && (
+                                          <span className="text-[9px] bg-info-bg text-info px-1 py-0.5 rounded font-bold shrink-0">
+                                            {t.groupBuy.groupBuyTag}
+                                          </span>
+                                        )}
+                                      </div>
                                       <span className="text-xs font-bold tabular-nums text-foreground">{fmt(pe.amount)}</span>
                                     </div>
                                   </SwipeableRow>

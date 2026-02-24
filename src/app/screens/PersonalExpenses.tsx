@@ -187,6 +187,10 @@ export function PersonalExpenses() {
                         const isPayer = gb && gb.payerId === memberId;
                         const isSettled = gb && memberId ? gb.settlements[memberId] === true : false;
                         const payerName = gb ? getM(gb.payerId)?.name : '';
+                        // Get other participants for "跟誰搭" info
+                        const partners = gb
+                          ? [...new Set(gb.items.map(i => i.memberId))].filter(id => id !== memberId).map(id => getM(id)?.name).filter(Boolean)
+                          : [];
                         return (
                           <div className="flex items-center gap-3 px-4 py-3">
                             <CategoryIcon category={exp.category} size="md" />
@@ -200,9 +204,17 @@ export function PersonalExpenses() {
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground">{exp.date}</p>
+                              {gb && isPayer && partners.length > 0 && (
+                                <p className="text-[10px] text-info mt-0.5">
+                                  {t.groupBuy.payerSelf} · {t.groupBuy.sharedWith(partners.join('、'))}
+                                </p>
+                              )}
                               {gb && !isPayer && (
                                 <p className="text-[10px] text-warning mt-0.5">
-                                  {isSettled ? `✓ ${t.groupBuy.paid}` : `${t.groupBuy.owes(member.name, payerName ?? '', fmt(exp.amount))}`}
+                                  {isSettled
+                                    ? `✓ ${t.groupBuy.paid}`
+                                    : `${t.groupBuy.owes(member.name, payerName ?? '', fmt(exp.amount))}`
+                                  }
                                 </p>
                               )}
                             </div>
