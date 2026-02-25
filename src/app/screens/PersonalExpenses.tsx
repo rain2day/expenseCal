@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, ArrowLeft, Trash2, Pencil, Check } from 'lucide-react';
+import { ArrowLeft, Trash2, Pencil, Check } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
@@ -44,11 +44,6 @@ export function PersonalExpenses() {
     const cleanup = loadGroupBuys();
     return cleanup;
   }, [loadGroupBuys]);
-
-  // Navigate to shared AddExpense in personal mode
-  function goAddPersonal() {
-    navigate('/app/add-expense', { state: { personalMode: true, memberId } });
-  }
 
   // ── Stats ────────────────────────────────────────────────────────
   const stats = useMemo(() => {
@@ -107,12 +102,6 @@ export function PersonalExpenses() {
               <ArrowLeft size={20} strokeWidth={2} />
             </button>
             <h1 className="text-xl font-black text-foreground flex-1">{t.personal.title(member.name)}</h1>
-            <button
-              onClick={goAddPersonal}
-              className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center active:scale-90 transition-transform"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-            </button>
           </div>
 
           {/* Tab bar */}
