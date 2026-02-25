@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
 import { MemberAvatar, CategoryBadge, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { useT } from '../i18n/I18nContext';
+import { useVisualViewportHeight } from '../hooks/useVisualViewportHeight';
 
 const CATEGORIES: CategoryType[] = ['food', 'transport', 'accommodation', 'tickets', 'shopping', 'other'];
 
@@ -145,6 +146,17 @@ export function AddExpense() {
     ? parsedAmount % splitCount
     : 0;
   const amountStep = getCurrencyMinorDigits(currency) === 0 ? '1' : '0.01';
+  const vpHeight = useVisualViewportHeight();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleInputFocus = () => {
+    setTimeout(() => {
+      const el = document.activeElement as HTMLElement | null;
+      if (el && scrollRef.current) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 350);
+  };
 
   return (
     <motion.div
@@ -152,7 +164,8 @@ export function AddExpense() {
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden"
+      className="fixed top-0 inset-x-0 z-50 bg-background flex flex-col overflow-hidden"
+      style={{ height: vpHeight }}
     >
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="shrink-0 bg-sidebar px-4 pt-header pb-4 border-b border-border flex items-center justify-between lg:pt-6">
@@ -167,6 +180,7 @@ export function AddExpense() {
 
       {/* ── Content ─────────────────────────────────────────────── */}
       <div
+        ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
@@ -219,6 +233,7 @@ export function AddExpense() {
                 type="number"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
+                onFocus={handleInputFocus}
                 placeholder="0"
                 min="0"
                 step={amountStep}
@@ -243,6 +258,7 @@ export function AddExpense() {
             <input
               value={description}
               onChange={e => setDescription(e.target.value)}
+              onFocus={handleInputFocus}
               placeholder={t.addExpense.descriptionPlaceholder}
               className="w-full bg-secondary rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 border border-border transition-all placeholder:text-subtle"
             />

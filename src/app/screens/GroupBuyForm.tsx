@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { ArrowLeft, Plus, X, Calendar, Check, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import { CategoryType, parseAmountInput, formatAmountInput, getCurrencyMinorDigits } from '../data/sampleData';
 import { MemberAvatar, CategoryBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { useT } from '../i18n/I18nContext';
+import { useVisualViewportHeight } from '../hooks/useVisualViewportHeight';
 
 const CATEGORIES: CategoryType[] = ['food', 'transport', 'accommodation', 'tickets', 'shopping', 'other'];
 
@@ -99,6 +100,18 @@ export function GroupBuyForm() {
   }
 
   const payerMember = payerId ? getMember(payerId) : undefined;
+  const vpHeight = useVisualViewportHeight();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Scroll focused input into view within the scroll container
+  const handleInputFocus = () => {
+    setTimeout(() => {
+      const el = document.activeElement as HTMLElement | null;
+      if (el && scrollRef.current) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 350);
+  };
 
   return (
     <motion.div
@@ -106,7 +119,8 @@ export function GroupBuyForm() {
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden"
+      className="fixed top-0 inset-x-0 z-50 bg-background flex flex-col overflow-hidden"
+      style={{ height: vpHeight }}
     >
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className="shrink-0 bg-sidebar px-4 pt-header pb-4 border-b border-border flex items-center gap-3 lg:pt-6">
@@ -121,6 +135,7 @@ export function GroupBuyForm() {
 
       {/* ── Content ─────────────────────────────────────────────── */}
       <div
+        ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
@@ -133,6 +148,7 @@ export function GroupBuyForm() {
               <input
                 value={title}
                 onChange={e => setTitle(e.target.value)}
+                onFocus={handleInputFocus}
                 placeholder={t.groupBuy.titlePlaceholder}
                 className="w-full bg-secondary rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 border border-border transition-all placeholder:text-subtle"
               />
@@ -261,6 +277,7 @@ export function GroupBuyForm() {
                       <input
                         value={itemDesc}
                         onChange={e => setItemDesc(e.target.value)}
+                        onFocus={handleInputFocus}
                         placeholder={t.groupBuy.itemDescPlaceholder}
                         className="w-full bg-card rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 border border-border placeholder:text-subtle"
                       />
@@ -275,6 +292,7 @@ export function GroupBuyForm() {
                           type="number"
                           value={itemAmount}
                           onChange={e => setItemAmount(e.target.value)}
+                          onFocus={handleInputFocus}
                           placeholder="0"
                           min="0"
                           step={amountStep}
