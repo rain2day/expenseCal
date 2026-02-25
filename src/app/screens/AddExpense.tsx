@@ -726,26 +726,24 @@ export function AddExpense() {
           </StaggerItem>
           )}
 
-          <div className="h-4" />
-        </StaggerContainer>
-      </div>
+          {/* ── Save Button ─────────────────────────────────────────── */}
+          <StaggerItem>
+            <button
+              onClick={handleSave}
+              disabled={isGroupBuy && !gbCanSubmit}
+              className={`w-full rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 transition-all active:scale-98
+                ${isGroupBuy && !gbCanSubmit
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25'
+                }`}
+            >
+              {isGroupBuy ? <ShoppingBag size={18} strokeWidth={2.5} /> : <Check size={18} strokeWidth={2.5} />}
+              {isGroupBuy ? t.groupBuy.confirm : (isEdit || isEditPersonal ? t.addExpense.saveEdit : t.addExpense.saveNew)}
+            </button>
+          </StaggerItem>
 
-      {/* ── Save Button ─────────────────────────────────────────── */}
-      <div className="shrink-0 bg-sidebar px-4 pt-4 border-t border-border pb-[max(env(safe-area-inset-bottom,0px),16px)]">
-        <div className="max-w-lg mx-auto">
-          <button
-            onClick={handleSave}
-            disabled={isGroupBuy && !gbCanSubmit}
-            className={`w-full rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 transition-all active:scale-98
-              ${isGroupBuy && !gbCanSubmit
-                ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25'
-              }`}
-          >
-            {isGroupBuy ? <ShoppingBag size={18} strokeWidth={2.5} /> : <Check size={18} strokeWidth={2.5} />}
-            {isGroupBuy ? t.groupBuy.confirm : (isEdit || isEditPersonal ? t.addExpense.saveEdit : t.addExpense.saveNew)}
-          </button>
-        </div>
+          <div className="h-[max(env(safe-area-inset-bottom,0px),16px)]" />
+        </StaggerContainer>
       </div>
     </motion.div>
   );
