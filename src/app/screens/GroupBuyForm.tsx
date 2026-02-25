@@ -29,19 +29,24 @@ export function GroupBuyForm() {
   const [itemDesc, setItemDesc] = useState('');
   const [itemAmount, setItemAmount] = useState('');
   const [itemCategory, setItemCategory] = useState<CategoryType>('shopping');
+  const [taxFree, setTaxFree] = useState(false);
 
   const amountStep = getCurrencyMinorDigits(currency) === 0 ? '1' : '0.01';
 
   // ── Settlement preview ─────────────────────────────────────────────
-  const total = items.reduce((s, i) => s + i.amount, 0);
-  const payerItems = items.filter(i => i.memberId === payerId);
-  const payerTotal = payerItems.reduce((s, i) => s + i.amount, 0);
+  const TAX_RATE = 1.1;
+  const taxAdj = (amt: number) => taxFree ? Math.round(amt / TAX_RATE) : amt;
+  const totalRaw = items.reduce((s, i) => s + i.amount, 0);
+  const total = taxAdj(totalRaw);
+  const payerTotalRaw = items.filter(i => i.memberId === payerId).reduce((s, i) => s + i.amount, 0);
+  const payerTotal = taxAdj(payerTotalRaw);
   const debtors = items
     .filter(i => i.memberId !== payerId)
     .reduce((acc, i) => {
-      acc[i.memberId] = (acc[i.memberId] || 0) + i.amount;
+      acc[i.memberId] = (acc[i.memberId] || 0) + taxAdj(i.amount);
       return acc;
     }, {} as Record<string, number>);
+  const taxSaved = taxFree ? totalRaw - total : 0;
 
   // ── Add item handler ───────────────────────────────────────────────
   function handleAddItem() {
@@ -108,8 +113,13 @@ export function GroupBuyForm() {
     setTimeout(() => {
       const el = document.activeElement as HTMLElement | null;
       if (el && scrollRef.current) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const elRect = el.getBoundingClientRect();
+        const containerRect = scrollRef.current.getBoundingClientRect();
+        if (elRect.top < containerRect.top || elRect.bottom > containerRect.bottom) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
     }, 350);
   };
 
@@ -152,22 +162,6 @@ export function GroupBuyForm() {
                 placeholder={t.groupBuy.titlePlaceholder}
                 className="w-full bg-secondary rounded-xl px-3 py-2.5 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 border border-border transition-all placeholder:text-subtle"
               />
-            </div>
-          </StaggerItem>
-
-          {/* Date */}
-          <StaggerItem>
-            <div className="bg-card border border-border rounded-2xl p-4">
-              <label className="block text-xs text-muted-foreground mb-2">{t.groupBuy.date}</label>
-              <div className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 border border-border">
-                <Calendar size={16} className="text-muted-foreground" strokeWidth={2} />
-                <input
-                  type="date"
-                  value={date}
-                  onChange={e => setDate(e.target.value)}
-                  className="flex-1 bg-transparent text-sm text-foreground outline-none"
-                />
-              </div>
             </div>
           </StaggerItem>
 
@@ -347,15 +341,44 @@ export function GroupBuyForm() {
             </div>
           </StaggerItem>
 
+          {/* Tax-free toggle */}
+          <StaggerItem>
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-foreground">{t.groupBuy.taxFree}</span>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t.groupBuy.taxFreeHint}</p>
+                </div>
+                <button
+                  onClick={() => setTaxFree(prev => !prev)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${taxFree ? 'bg-primary' : 'bg-secondary border border-border'}`}
+                >
+                  <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${taxFree ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
+          </StaggerItem>
+
           {/* Settlement Preview */}
           {items.length > 0 && payerId && (
             <StaggerItem>
               <div className="bg-card border border-border rounded-2xl p-4">
                 <label className="block text-xs text-muted-foreground mb-3">{t.groupBuy.settlementPreview}</label>
                 <div className="space-y-2">
-                  {/* Total */}
+                  {taxFree && (
+                    <>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{t.groupBuy.originalTotal}</span>
+                        <span className="text-muted-foreground tabular-nums line-through">{fmt(totalRaw)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-green-400">{t.groupBuy.taxSaved}</span>
+                        <span className="text-green-400 font-bold tabular-nums">-{fmt(taxSaved)}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{t.groupBuy.total}</span>
+                    <span className="text-muted-foreground">{taxFree ? t.groupBuy.afterTax : t.groupBuy.total}</span>
                     <span className="font-bold text-foreground tabular-nums">{fmt(total)}</span>
                   </div>
 
@@ -390,6 +413,22 @@ export function GroupBuyForm() {
               </div>
             </StaggerItem>
           )}
+
+          {/* Date */}
+          <StaggerItem>
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <label className="block text-xs text-muted-foreground mb-2">{t.groupBuy.date}</label>
+              <div className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 border border-border">
+                <Calendar size={16} className="text-muted-foreground" strokeWidth={2} />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                  className="flex-1 bg-transparent text-sm text-foreground outline-none"
+                />
+              </div>
+            </div>
+          </StaggerItem>
 
           {/* ── Confirm Button (inside scroll) ───────────────────── */}
           <StaggerItem>
