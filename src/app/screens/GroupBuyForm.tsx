@@ -98,6 +98,7 @@ export function GroupBuyForm() {
       items,
       date,
       settlements,
+      taxFree: taxFree || undefined,
     });
 
     showToast('success', t.groupBuy.created);

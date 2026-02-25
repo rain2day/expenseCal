@@ -64,6 +64,7 @@ export interface GroupBuy {
   date: string;
   createdAt: string;
   settlements: Record<string, boolean>;
+  taxFree?: boolean;
 }
 
 export const MEMBERS: Member[] = [

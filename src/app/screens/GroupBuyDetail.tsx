@@ -60,13 +60,15 @@ export function GroupBuyDetail() {
   }
 
   const payer = getMember(gb.payerId);
-  const total = gb.items.reduce((s, i) => s + i.amount, 0);
+  const TAX_RATE = 1.1;
+  const taxAdj = (amt: number) => gb.taxFree ? Math.round(amt / TAX_RATE) : amt;
+  const total = taxAdj(gb.items.reduce((s, i) => s + i.amount, 0));
 
   // Group items by debtor (non-payer members)
   const debtors: Record<string, number> = {};
   gb.items.forEach(i => {
     if (i.memberId !== gb.payerId) {
-      debtors[i.memberId] = (debtors[i.memberId] || 0) + i.amount;
+      debtors[i.memberId] = (debtors[i.memberId] || 0) + taxAdj(i.amount);
     }
   });
 

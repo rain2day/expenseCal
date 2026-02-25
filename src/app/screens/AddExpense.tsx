@@ -120,6 +120,7 @@ export function AddExpense() {
         items: gbItems,
         date,
         settlements,
+        taxFree: gbTaxFree || undefined,
       });
       showToast('success', t.groupBuy.created);
       navigate(-1);
