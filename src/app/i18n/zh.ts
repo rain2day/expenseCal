@@ -456,6 +456,11 @@ export const zh: Translations = {
     noGroupBuys: '暫無搭單記錄',
     deleteConfirm: '確定要刪除此搭單？相關個人消費不會被刪除。',
     viewDetail: '查看詳情',
+    taxFree: '免稅 (Tax Free)',
+    taxFreeHint: '日本消費稅 10%，免稅後金額自動調整',
+    originalTotal: '稅前原價',
+    taxSaved: '消費稅減免',
+    afterTax: '免稅後合計',
   },
   personal: {
     title: (name: string) => `${name} 的個人消費`,

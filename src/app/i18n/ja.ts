@@ -456,6 +456,11 @@ export const ja: Translations = {
     noGroupBuys: '共同購入の記録はありません',
     deleteConfirm: 'この共同購入を削除しますか？関連する個人支出は削除されません。',
     viewDetail: '詳細を見る',
+    taxFree: '免税 (Tax Free)',
+    taxFreeHint: '消費税10%を差し引いた金額で精算',
+    originalTotal: '税込合計',
+    taxSaved: '消費税免除分',
+    afterTax: '免税後合計',
   },
   personal: {
     title: (name: string) => `${name} の個人支出`,

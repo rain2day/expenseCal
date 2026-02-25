@@ -62,6 +62,7 @@ export function AddExpense() {
   const [gbItemDesc, setGbItemDesc] = useState('');
   const [gbItemAmount, setGbItemAmount] = useState('');
   const [gbItemCategory, setGbItemCategory] = useState<CategoryType>('shopping');
+  const [gbTaxFree, setGbTaxFree] = useState(false);
 
   const isPersonal = expenseType === 'personal';
   const isGroupBuy = expenseType === 'groupBuy';
@@ -207,11 +208,16 @@ export function AddExpense() {
   const amountStep = getCurrencyMinorDigits(currency) === 0 ? '1' : '0.01';
 
   // GroupBuy settlement preview
-  const gbTotal = gbItems.reduce((s, i) => s + i.amount, 0);
-  const gbPayerTotal = gbItems.filter(i => i.memberId === gbPayerId).reduce((s, i) => s + i.amount, 0);
+  const TAX_RATE = 1.1;
+  const taxAdj = (amt: number) => gbTaxFree ? Math.round(amt / TAX_RATE) : amt;
+  const gbTotalRaw = gbItems.reduce((s, i) => s + i.amount, 0);
+  const gbTotal = taxAdj(gbTotalRaw);
+  const gbPayerTotalRaw = gbItems.filter(i => i.memberId === gbPayerId).reduce((s, i) => s + i.amount, 0);
+  const gbPayerTotal = taxAdj(gbPayerTotalRaw);
   const gbDebtors = gbItems
     .filter(i => i.memberId !== gbPayerId)
-    .reduce((acc, i) => { acc[i.memberId] = (acc[i.memberId] || 0) + i.amount; return acc; }, {} as Record<string, number>);
+    .reduce((acc, i) => { acc[i.memberId] = (acc[i.memberId] || 0) + taxAdj(i.amount); return acc; }, {} as Record<string, number>);
+  const gbTaxSaved = gbTaxFree ? gbTotalRaw - gbTotal : 0;
   const gbPayerMember = gbPayerId ? getMember(gbPayerId) : undefined;
   const gbUniq = new Set(gbItems.map(i => i.memberId));
   const gbCanSubmit = !!(gbTitle.trim() && gbPayerId && gbItems.length > 0
@@ -653,14 +659,44 @@ export function AddExpense() {
                 </div>
               </StaggerItem>
 
+              {/* Tax-free toggle */}
+              <StaggerItem>
+                <div className="bg-card border border-border rounded-2xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-foreground">{t.groupBuy.taxFree}</span>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{t.groupBuy.taxFreeHint}</p>
+                    </div>
+                    <button
+                      onClick={() => setGbTaxFree(prev => !prev)}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${gbTaxFree ? 'bg-primary' : 'bg-secondary border border-border'}`}
+                    >
+                      <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${gbTaxFree ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                </div>
+              </StaggerItem>
+
               {/* GroupBuy Settlement Preview */}
               {gbItems.length > 0 && gbPayerId && (
                 <StaggerItem>
                   <div className="bg-card border border-border rounded-2xl p-4">
                     <label className="block text-xs text-muted-foreground mb-3">{t.groupBuy.settlementPreview}</label>
                     <div className="space-y-2">
+                      {gbTaxFree && (
+                        <>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">{t.groupBuy.originalTotal}</span>
+                            <span className="text-muted-foreground tabular-nums line-through">{fmt(gbTotalRaw)}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-green-400">{t.groupBuy.taxSaved}</span>
+                            <span className="text-green-400 font-bold tabular-nums">-{fmt(gbTaxSaved)}</span>
+                          </div>
+                        </>
+                      )}
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{t.groupBuy.total}</span>
+                        <span className="text-muted-foreground">{gbTaxFree ? t.groupBuy.afterTax : t.groupBuy.total}</span>
                         <span className="font-bold text-foreground tabular-nums">{fmt(gbTotal)}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">

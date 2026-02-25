@@ -442,6 +442,11 @@ export interface Translations {
     noGroupBuys: string;
     deleteConfirm: string;
     viewDetail: string;
+    taxFree: string;
+    taxFreeHint: string;
+    originalTotal: string;
+    taxSaved: string;
+    afterTax: string;
   };
   personal: {
     title: (name: string) => string;
