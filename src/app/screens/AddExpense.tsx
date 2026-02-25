@@ -483,22 +483,6 @@ export function AddExpense() {
                 </div>
               </StaggerItem>
 
-              {/* GroupBuy Date */}
-              <StaggerItem>
-                <div className="bg-card border border-border rounded-2xl p-4">
-                  <label className="block text-xs text-muted-foreground mb-2">{t.groupBuy.date}</label>
-                  <div className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 border border-border">
-                    <Calendar size={16} className="text-muted-foreground" strokeWidth={2} />
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={e => setDate(e.target.value)}
-                      className="flex-1 bg-transparent text-sm text-foreground outline-none"
-                    />
-                  </div>
-                </div>
-              </StaggerItem>
-
               {/* GroupBuy Payer */}
               <StaggerItem>
                 <div className="bg-card border border-border rounded-2xl p-4">
@@ -698,6 +682,22 @@ export function AddExpense() {
                   </div>
                 </StaggerItem>
               )}
+
+              {/* GroupBuy Date */}
+              <StaggerItem>
+                <div className="bg-card border border-border rounded-2xl p-4">
+                  <label className="block text-xs text-muted-foreground mb-2">{t.groupBuy.date}</label>
+                  <div className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 border border-border">
+                    <Calendar size={16} className="text-muted-foreground" strokeWidth={2} />
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={e => setDate(e.target.value)}
+                      className="flex-1 bg-transparent text-sm text-foreground outline-none"
+                    />
+                  </div>
+                </div>
+              </StaggerItem>
             </>
           )}
 
