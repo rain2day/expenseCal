@@ -14,13 +14,20 @@ export function useVisualViewportHeight() {
 
     const update = () => {
       setHeight(`${vv.height}px`);
+      // iOS Safari can scroll the window behind a fixed overlay when
+      // the keyboard opens; reset it so the overlay doesn't get stuck.
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
     };
 
     // Set initial value
     update();
 
     vv.addEventListener('resize', update);
-    return () => vv.removeEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
   }, []);
 
   return height;

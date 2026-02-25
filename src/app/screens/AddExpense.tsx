@@ -224,8 +224,15 @@ export function AddExpense() {
     setTimeout(() => {
       const el = document.activeElement as HTMLElement | null;
       if (el && scrollRef.current) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const elRect = el.getBoundingClientRect();
+        const containerRect = scrollRef.current.getBoundingClientRect();
+        // Only scroll if the input is outside the visible container area
+        if (elRect.top < containerRect.top || elRect.bottom > containerRect.bottom) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
+      // Prevent iOS window-level scroll from sticking on fixed overlay
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
     }, 350);
   };
 
