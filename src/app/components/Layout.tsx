@@ -6,6 +6,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { ToastContainer } from './SharedComponents';
+import { RandomGeoBackground } from './RandomGeoBackground';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
@@ -100,6 +101,9 @@ export function Layout() {
 
   return (
     <div className="bg-transparent min-h-screen flex overflow-hidden max-w-[100vw]">
+      {/* ── Random Geometric Background Layer ──────────────────── */}
+      <RandomGeoBackground />
+
       {/* ── Desktop Sidebar ─────────────────────────────────────── */}
       <aside className="hidden lg:flex flex-col w-60 bg-sidebar border-r border-border fixed top-0 left-0 h-full z-30">
         {/* Logo */}

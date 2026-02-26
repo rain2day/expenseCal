@@ -756,6 +756,22 @@ html.dark-theme.geo-bg .bg-sidebar {
   border-color: rgba(120, 100, 80, 0.18);
 }
 
+/* ── Random Geometric Layer (React-generated) ────────────────────────── */
+.geo-random-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(50px) saturate(1.15);
+  opacity: 0.35;
+  will-change: transform;           /* GPU compositing */
+  transform: translateZ(0);
+}
+.dark .geo-random-layer,
+.dark-theme .geo-random-layer {
+  opacity: 0.75;
+}
+
 /* ── Geometric Background for Translucent mode ───────────────────────── */
 .geo-bg #root::before {
   content: '';
