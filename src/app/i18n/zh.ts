@@ -221,6 +221,7 @@ export const zh: Translations = {
     title: '設定',
     sectionGroup: '群組設定',
     sectionPrefs: '偏好設定',
+    sectionTheme: '主題設定',
     sectionData: '資料',
     sectionSync: '同步',
     sectionAbout: '關於',

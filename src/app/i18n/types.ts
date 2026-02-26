@@ -219,6 +219,7 @@ export interface Translations {
     title: string;
     sectionGroup: string;
     sectionPrefs: string;
+    sectionTheme: string;
     sectionData: string;
     sectionSync: string;
     sectionAbout: string;

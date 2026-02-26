@@ -221,6 +221,7 @@ export const ja: Translations = {
     title: '設定',
     sectionGroup: 'グループ設定',
     sectionPrefs: '環境設定',
+    sectionTheme: 'テーマ設定',
     sectionData: 'データ',
     sectionSync: '同期',
     sectionAbout: 'アプリについて',

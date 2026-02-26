@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
-  ChevronRight, Moon, Sun, Bell, Globe,
+  ChevronRight, Bell, Globe,
   Download, FileText, Trash2, Info, MessageSquare,
   Pencil, Palette, Check, Link2, Copy,
   Users, LogOut, Plus,
@@ -10,6 +10,7 @@ import { useT } from '../i18n/I18nContext';
 import { useNavigate } from 'react-router';
 import { CATEGORY_CONFIG, FUND_PAYER_ID, formatAmountInput } from '../data/sampleData';
 import { StaggerContainer, StaggerItem } from '../components/SharedComponents';
+import { ThemeConfigurator } from '../components/ThemeConfigurator';
 import { PdfReport } from '../components/PdfReport';
 
 interface SettingRow {
@@ -87,7 +88,7 @@ export function Settings() {
   const navigate = useNavigate();
   const { t, locale, setLocale } = useT();
   const {
-    darkMode, toggleDarkMode, groupName, setGroupName,
+    groupName, setGroupName,
     currency, setCurrency, convertCurrency, showToast,
     clearAllExpenses, expenses, members,
     notifications, toggleNotifications,
@@ -373,13 +374,6 @@ export function Settings() {
         <StaggerItem>
         <SectionCard title={t.settings.sectionPrefs}>
           <SettingItem
-            label={t.settings.darkMode}
-            icon={darkMode ? <Moon size={14} strokeWidth={2} /> : <Sun size={14} strokeWidth={2} />}
-            toggle={true}
-            toggleValue={darkMode}
-            onToggle={toggleDarkMode}
-          />
-          <SettingItem
             label={t.settings.notifications}
             icon={<Bell size={14} strokeWidth={2} />}
             toggle={true}
@@ -393,6 +387,14 @@ export function Settings() {
             onClick={() => setLocale(locale === 'zh' ? 'ja' : 'zh')}
           />
         </SectionCard>
+        </StaggerItem>
+
+        {/* ── Theme Settings ───────────────────────────────────────── */}
+        <StaggerItem>
+          <div>
+            <p className="text-xs text-subtle uppercase tracking-wider px-1 mb-2">{t.settings.sectionTheme}</p>
+            <ThemeConfigurator />
+          </div>
         </StaggerItem>
 
         {/* ── Data ─────────────────────────────────────────────────── */}
