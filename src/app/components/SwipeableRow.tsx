@@ -93,7 +93,7 @@ export function SwipeableRow({ children, actions, isOpen, onOpen, onClose, class
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onClick={handleTap}
-        className="relative z-10 bg-card"
+        className="relative z-10"
       >
         {children}
       </motion.div>
