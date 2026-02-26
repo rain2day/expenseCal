@@ -147,7 +147,7 @@ export function Onboarding() {
 
               <button
                 onClick={() => setStep(2)}
-                className="w-full bg-primary text-white rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:bg-primary/90 transition-colors mb-3 active:scale-98 glass-btn"
+                className="w-full bg-primary text-white rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 hover:bg-primary/90 transition-colors mb-3 active:scale-98"
               >
                 {t.onboarding.createGroup} <ArrowRight size={18} strokeWidth={2} />
               </button>
@@ -270,7 +270,7 @@ export function Onboarding() {
               <button
                 onClick={handleNext}
                 disabled={!gName.trim() || !gBudget}
-                className="w-full bg-primary disabled:opacity-30 text-white rounded-xl py-3 font-bold mt-6 flex items-center justify-center gap-2 active:scale-98 transition-transform glass-btn"
+                className="w-full bg-primary disabled:opacity-30 text-white rounded-xl py-3 font-bold mt-6 flex items-center justify-center gap-2 active:scale-98 transition-transform"
               >
                 {t.common.next} <ArrowRight size={16} strokeWidth={2} />
               </button>
@@ -329,7 +329,7 @@ export function Onboarding() {
               <button
                 onClick={handleNext}
                 disabled={isCreating}
-                className="w-full bg-primary disabled:opacity-40 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 active:scale-98 transition-all glass-btn"
+                className="w-full bg-primary disabled:opacity-40 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
                 {isCreating ? (
                   <>{t.onboarding.creating}</>
@@ -388,7 +388,7 @@ export function Onboarding() {
 
               <button
                 onClick={handleFinish}
-                className="w-full bg-primary text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-98 transition-transform glass-btn"
+                className="w-full bg-primary text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/30 active:scale-98 transition-transform"
               >
                 <Check size={18} strokeWidth={2.5} /> {t.onboarding.finish}
               </button>

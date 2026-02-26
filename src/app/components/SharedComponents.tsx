@@ -6,7 +6,6 @@ import {
 import { Member, CategoryType, CATEGORY_CONFIG } from '../data/sampleData';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
-import { hapticLight } from '../hooks/useHaptic';
 import { motion, AnimatePresence } from 'motion/react';
 
 // ── Category Icon Map ─────────────────────────────────────────────────────────
@@ -33,7 +32,7 @@ const AVATAR_SIZES = {
 export function MemberAvatar({ member, size = 'md', checked, onClick, stacked }: AvatarProps) {
   return (
     <button
-      onClick={onClick ? () => { hapticLight(); onClick(); } : undefined}
+      onClick={onClick}
       disabled={!onClick}
       className={`relative flex-shrink-0 rounded-full flex items-center justify-center font-bold text-white select-none
         ${AVATAR_SIZES[size]}
@@ -86,7 +85,7 @@ export function CategoryBadge({ category, selected, onClick }: { category: Categ
   const IconComp = ICON_MAP[cfg.iconKey] ?? Package;
   return (
     <motion.button
-      onClick={onClick ? () => { hapticLight(); onClick(); } : undefined}
+      onClick={onClick}
       whileTap={{ scale: 0.95 }}
       transition={{ type: 'tween', duration: 0.15 }}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all
@@ -227,7 +226,7 @@ export function ToastContainer() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 22, mass: 0.8 }}
+            transition={{ duration: 0.25 }}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-white text-sm pointer-events-auto min-w-[200px]
               ${t.type === 'success' ? 'bg-success' : t.type === 'error' ? 'bg-destructive' : 'bg-primary'}`}
           >
@@ -296,7 +295,7 @@ export function EmptyState({ icon, title, subtitle, cta, onCta }: {
       {subtitle && <p className="text-sm text-muted-foreground mb-6">{subtitle}</p>}
       {cta && onCta && (
         <button onClick={onCta}
-          className="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold glass-btn">
+          className="bg-primary text-white px-6 py-3 rounded-xl text-sm font-bold">
           {cta}
         </button>
       )}

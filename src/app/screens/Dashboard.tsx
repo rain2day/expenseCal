@@ -115,7 +115,7 @@ export function Dashboard() {
 
       <StaggerContainer className="max-w-2xl mx-auto px-4 py-4 space-y-4">
         {/* ── Health Gauge Card ──────────────────────────────────── */}
-        <StaggerItem><div className="bg-card rounded-2xl border border-border p-4 neu-raised glass-rim">
+        <StaggerItem><div className="bg-card rounded-2xl border border-border p-4 neu-raised">
           <DonutGauge percentage={healthPct} />
 
           {/* 2×2 Stat Grid */}
@@ -140,7 +140,7 @@ export function Dashboard() {
         </div></StaggerItem>
 
         {/* ── Fund Card ─────────────────────────────────────────── */}
-        <StaggerItem><div className="bg-card border border-border rounded-2xl p-4 neu-raised glass-rim">
+        <StaggerItem><div className="bg-card border border-border rounded-2xl p-4 neu-raised">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Wallet size={16} className="text-primary" strokeWidth={2} />
@@ -216,7 +216,7 @@ export function Dashboard() {
               </div>
               <button
                 onClick={handleAddContribution}
-                className="w-full bg-primary text-white rounded-lg py-2.5 text-sm font-bold active:scale-95 transition-transform glass-btn"
+                className="w-full bg-primary text-white rounded-lg py-2.5 text-sm font-bold active:scale-95 transition-transform"
               >
                 {t.dashboard.confirmAdd}
               </button>
@@ -247,7 +247,7 @@ export function Dashboard() {
         </div></StaggerItem>
 
         {/* ── Recent Expenses ────────────────────────────────────── */}
-        <StaggerItem><div className="bg-card border border-border rounded-2xl overflow-hidden neu-raised glass-rim">
+        <StaggerItem><div className="bg-card border border-border rounded-2xl overflow-hidden neu-raised">
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <h2 className="font-bold text-sm text-foreground">{t.dashboard.recentExpenses}</h2>
             <button
@@ -300,7 +300,7 @@ export function Dashboard() {
         </div></StaggerItem>
 
         {/* ── Balance Summary ────────────────────────────────────── */}
-        <StaggerItem><div className="bg-card border border-border rounded-2xl overflow-hidden neu-raised glass-rim">
+        <StaggerItem><div className="bg-card border border-border rounded-2xl overflow-hidden neu-raised">
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
             <h2 className="font-bold text-sm text-foreground">{t.dashboard.memberBalance}</h2>
             <button onClick={() => navigate('/app/settlement')} className="text-xs text-primary flex items-center gap-0.5 active:opacity-70">

@@ -73,7 +73,7 @@ export function Members() {
       <StaggerContainer className="max-w-2xl mx-auto px-4 py-4 space-y-3">
         {/* ── Add Member Form ────────────────────────────────────────── */}
         {showAddMember && (
-          <div className="bg-card border border-border rounded-2xl p-4 space-y-3 glass-rim">
+          <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
             <p className="text-sm font-bold text-foreground">{t.members.addMember}</p>
             <input
               autoFocus
@@ -86,7 +86,7 @@ export function Members() {
             <div className="flex gap-2">
               <button
                 onClick={handleAddMember}
-                className="flex-1 bg-primary text-white rounded-xl py-2.5 text-sm font-bold active:scale-95 transition-transform glass-btn"
+                className="flex-1 bg-primary text-white rounded-xl py-2.5 text-sm font-bold active:scale-95 transition-transform"
               >
                 {t.members.confirmAdd}
               </button>
@@ -108,7 +108,7 @@ export function Members() {
           return (
             <StaggerItem key={b.member.id}>
             <div
-              className="bg-card border border-border rounded-2xl overflow-hidden glass-rim">
+              className="bg-card border border-border rounded-2xl overflow-hidden">
               {/* Main row */}
               <div
                 className="flex items-center gap-3 px-4 py-3.5 cursor-pointer select-none active:bg-secondary transition-colors"
@@ -346,7 +346,7 @@ export function Members() {
 
           return (
             <StaggerItem>
-            <div className="bg-card border border-border rounded-2xl p-5 glass-rim">
+            <div className="bg-card border border-border rounded-2xl p-5">
               <h2 className="font-bold text-sm text-foreground mb-4">{t.members.inviteFriends}</h2>
 
               {/* QR code */}
@@ -374,7 +374,7 @@ export function Members() {
               <div className="flex gap-3">
                 <button
                   onClick={handleShare}
-                  className="flex-1 flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-2.5 font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-primary/20 glass-btn"
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-2.5 font-bold text-sm active:scale-95 transition-transform shadow-lg shadow-primary/20"
                 >
                   <Share2 size={16} strokeWidth={2} /> {t.common.share}
                 </button>
