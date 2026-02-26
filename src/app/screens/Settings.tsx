@@ -110,6 +110,7 @@ export function Settings() {
   const [showPdfReport, setShowPdfReport] = useState(false);
   const [pdfExporting, setPdfExporting] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
 
   const currencies = CURRENCY_CODES.map(code => ({
@@ -384,8 +385,27 @@ export function Settings() {
             label={t.settings.language}
             value={locale === 'zh' ? t.settings.langZh : locale === 'ja' ? t.settings.langJa : t.settings.langEn}
             icon={<Globe size={14} strokeWidth={2} />}
-            onClick={() => setLocale(locale === 'zh' ? 'ja' : locale === 'ja' ? 'en' : 'zh')}
+            onClick={() => setShowLangPicker(v => !v)}
           />
+          {showLangPicker && (
+            <div className="px-4 py-2 bg-sidebar">
+              <div className="flex gap-1.5">
+                {([['zh', t.settings.langZh], ['ja', t.settings.langJa], ['en', t.settings.langEn]] as const).map(([code, label]) => (
+                  <button
+                    key={code}
+                    onClick={() => { setLocale(code); setShowLangPicker(false); }}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      locale === code
+                        ? 'bg-primary text-white shadow-md'
+                        : 'text-muted-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </SectionCard>
         </StaggerItem>
 
