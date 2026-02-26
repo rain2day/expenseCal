@@ -10,7 +10,6 @@ import { useT } from '../i18n/I18nContext';
 import { useNavigate } from 'react-router';
 import { CATEGORY_CONFIG, FUND_PAYER_ID, formatAmountInput } from '../data/sampleData';
 import { StaggerContainer, StaggerItem } from '../components/SharedComponents';
-import { ThemeConfigurator } from '../components/ThemeConfigurator';
 import { PdfReport } from '../components/PdfReport';
 
 interface SettingRow {
@@ -406,15 +405,12 @@ export function Settings() {
               </div>
             </div>
           )}
+          <SettingItem
+            label={t.settings.sectionTheme}
+            icon={<Palette size={14} strokeWidth={2} />}
+            onClick={() => navigate('/app/theme')}
+          />
         </SectionCard>
-        </StaggerItem>
-
-        {/* ── Theme Settings ───────────────────────────────────────── */}
-        <StaggerItem>
-          <div>
-            <p className="text-xs text-subtle uppercase tracking-wider px-1 mb-2">{t.settings.sectionTheme}</p>
-            <ThemeConfigurator />
-          </div>
         </StaggerItem>
 
         {/* ── Data ─────────────────────────────────────────────────── */}

@@ -10,6 +10,7 @@ import { Analytics } from './screens/Analytics';
 import { Members } from './screens/Members';
 import { PersonalExpenses } from './screens/PersonalExpenses';
 import { Settings } from './screens/Settings';
+import { ThemeSettings } from './screens/ThemeSettings';
 import { ComponentLibrary } from './screens/ComponentLibrary';
 import { JoinGroup } from './screens/JoinGroup';
 import { GroupBuyForm } from './screens/GroupBuyForm';
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
       { path: 'group-buy', Component: GroupBuyForm },
       { path: 'group-buy/:groupBuyId', Component: GroupBuyDetail },
       { path: 'settings', Component: Settings },
+      { path: 'theme', Component: ThemeSettings },
     ],
   },
   {
