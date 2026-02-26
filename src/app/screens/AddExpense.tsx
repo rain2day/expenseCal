@@ -249,7 +249,7 @@ export function AddExpense() {
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed top-0 inset-x-0 z-50 bg-background flex flex-col overflow-hidden"
+      className="fixed top-0 inset-x-0 z-50 bg-transparent flex flex-col overflow-hidden"
       style={{ height: vpHeight }}
     >
       {/* ── Header ─────────────────────────────────────────────── */}
