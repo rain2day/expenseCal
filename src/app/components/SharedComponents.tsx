@@ -314,14 +314,12 @@ const staggerContainer = {
 };
 
 const staggerItem = {
-  initial: { y: 6 },
+  initial: { opacity: 0 },
   animate: {
-    y: 0,
+    opacity: 1,
     transition: {
-      type: 'spring' as const,
-      damping: 20,
-      mass: 0.4,
-      stiffness: 300,
+      duration: 0.18,
+      ease: [0.22, 1, 0.36, 1],
     },
   },
 };
