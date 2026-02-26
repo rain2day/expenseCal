@@ -227,20 +227,19 @@ export function AddExpense() {
   const vpHeight = useVisualViewportHeight();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleInputFocus = () => {
+  const handleInputFocus = (e: React.FocusEvent) => {
+    const target = e.target as HTMLElement;
     setTimeout(() => {
-      const el = document.activeElement as HTMLElement | null;
-      if (el && scrollRef.current) {
-        const elRect = el.getBoundingClientRect();
+      // Only act if the same element is still focused (user hasn't tapped away)
+      if (document.activeElement !== target) return;
+      if (scrollRef.current) {
+        const elRect = target.getBoundingClientRect();
         const containerRect = scrollRef.current.getBoundingClientRect();
-        // Only scroll if the input is outside the visible container area
         if (elRect.top < containerRect.top || elRect.bottom > containerRect.bottom) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
-      // Prevent iOS window-level scroll from sticking on fixed overlay
-      if (window.scrollY !== 0) window.scrollTo(0, 0);
-    }, 350);
+    }, 300);
   };
 
   return (
@@ -771,7 +770,7 @@ export function AddExpense() {
               className={`w-full rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 transition-all active:scale-98
                 ${isGroupBuy && !gbCanSubmit
                   ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                  : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25'
+                  : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25 glass-btn'
                 }`}
             >
               {isGroupBuy ? <ShoppingBag size={18} strokeWidth={2.5} /> : <Check size={18} strokeWidth={2.5} />}

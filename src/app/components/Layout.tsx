@@ -8,7 +8,8 @@ import {
 import { ToastContainer } from './SharedComponents';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
-import { AnimatePresence, LayoutGroup, motion } from 'motion/react';
+import { hapticLight, hapticMedium } from '../hooks/useHaptic';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { AddExpense } from '../screens/AddExpense';
 import { Translations } from '../i18n/types';
 
@@ -43,6 +44,7 @@ function NeuTab({ to, icon: Icon, label }: { to: string; icon: React.ElementType
   return (
     <NavLink
       to={to}
+      onClick={() => hapticLight()}
       className="flex flex-col items-center gap-0.5 min-w-[52px] relative"
     >
       <motion.div
@@ -82,6 +84,7 @@ export function Layout() {
   const location = useLocation();
   const { groupName } = useApp();
   const { t, locale } = useT();
+  const shouldReduceMotion = useReducedMotion();
   const showFAB = !location.pathname.startsWith('/components');
   const BOTTOM_NAV = getBottomNav(t);
   const SIDEBAR_NAV = getSidebarNav(t);
@@ -137,7 +140,7 @@ export function Layout() {
         <div className="px-4 py-4 border-t border-border">
           <NavLink
             to="/app/add-expense"
-            className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-3 flex items-center justify-center gap-2 font-bold transition-colors shadow-lg shadow-primary/25 active:scale-95"
+            className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-3 flex items-center justify-center gap-2 font-bold transition-colors shadow-lg shadow-primary/25 active:scale-95 glass-btn"
           >
             <Plus size={17} strokeWidth={2.5} />
             {t.nav.addExpense}
@@ -148,9 +151,15 @@ export function Layout() {
       {/* ── Main Content ───────────────────────────────────────────── */}
       <ScrollToTop />
       <main className="flex-1 lg:ml-60 pb-[72px] lg:pb-6 min-h-screen w-full min-w-0 overflow-hidden">
-        <div key={location.pathname} className="h-full w-full overflow-x-hidden">
+        <motion.div
+          key={isAddExpense ? prevPageRef.current : location.pathname}
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          className="h-full w-full overflow-x-hidden"
+        >
           {!isAddExpense && <Outlet />}
-        </div>
+        </motion.div>
       </main>
 
       {/* ── AddExpense Overlay (OUTSIDE main/AnimatePresence) ──────── */}
@@ -184,8 +193,8 @@ export function Layout() {
         <button
           type="button"
           aria-label={t.nav.addExpense}
-          onClick={() => navigate('/app/add-expense')}
-          className="lg:hidden fixed z-40 rounded-full bg-primary text-white flex items-center justify-center border border-white/24 active:bg-primary/90 active:scale-90 transition-transform"
+          onClick={() => { hapticMedium(); navigate('/app/add-expense'); }}
+          className="lg:hidden fixed z-40 rounded-full bg-primary text-white flex items-center justify-center border border-white/24 active:bg-primary/90 active:scale-90 transition-transform glass-btn"
           style={{
             bottom: 'calc(max(env(safe-area-inset-bottom, 0px), 8px) + 14px)',
             left: '50%',

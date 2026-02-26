@@ -147,7 +147,7 @@ export function Analytics() {
         {tab === 'category' && (
           <>
             <StaggerItem>
-            <div className="bg-card border border-border rounded-2xl p-4">
+            <div className="bg-card border border-border rounded-2xl p-4 glass-rim">
               <h2 className="text-sm font-bold text-muted-foreground mb-4">{t.analytics.categoryDist}</h2>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
@@ -172,7 +172,7 @@ export function Analytics() {
             </StaggerItem>
 
             <StaggerItem>
-            <div className="bg-card border border-border rounded-2xl p-4 space-y-2.5">
+            <div className="bg-card border border-border rounded-2xl p-4 space-y-2.5 glass-rim">
               {categoryData.map((d, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: d.color }} />
@@ -192,7 +192,7 @@ export function Analytics() {
         {/* ── Tab: Per Person ───────────────────────────────────────── */}
         {tab === 'person' && (
           <StaggerItem>
-          <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="bg-card border border-border rounded-2xl p-4 glass-rim">
             <h2 className="text-sm font-bold text-muted-foreground mb-4">{t.analytics.memberComparison}</h2>
             <ResponsiveContainer width="100%" height={320}>
               <BarChart
@@ -242,7 +242,7 @@ export function Analytics() {
           return (
           <>
           <StaggerItem>
-          <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="bg-card border border-border rounded-2xl p-4 glass-rim">
             <h2 className="text-sm font-bold text-muted-foreground mb-1">{t.analytics.trendOverview}</h2>
             <p className="text-xs text-subtle mb-4">
               {demoMode ? t.analytics.demoTrendDesc : t.analytics.dayCount(trendData.length)}
@@ -406,7 +406,7 @@ export function Analytics() {
 
             return (
               <StaggerItem>
-              <div className="bg-card border border-border rounded-2xl p-4">
+              <div className="bg-card border border-border rounded-2xl p-4 glass-rim">
                 <div className="text-xs font-bold text-foreground mb-3">{t.analytics.fundBreakdown}</div>
 
                 <div className="space-y-2.5">

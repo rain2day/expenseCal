@@ -110,17 +110,17 @@ export function GroupBuyForm() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll focused input into view within the scroll container
-  const handleInputFocus = () => {
+  const handleInputFocus = (e: React.FocusEvent) => {
+    const target = e.target as HTMLElement;
     setTimeout(() => {
-      const el = document.activeElement as HTMLElement | null;
-      if (el && scrollRef.current) {
-        const elRect = el.getBoundingClientRect();
+      if (document.activeElement !== target) return;
+      if (scrollRef.current) {
+        const elRect = target.getBoundingClientRect();
         const containerRect = scrollRef.current.getBoundingClientRect();
         if (elRect.top < containerRect.top || elRect.bottom > containerRect.bottom) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
-      if (window.scrollY !== 0) window.scrollTo(0, 0);
     }, 350);
   };
 
@@ -439,7 +439,7 @@ export function GroupBuyForm() {
                 disabled={!canSubmit}
                 className={`w-full rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 transition-all active:scale-98
                   ${canSubmit
-                    ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25'
+                    ? 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25 glass-btn'
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
               >

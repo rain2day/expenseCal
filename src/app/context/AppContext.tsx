@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { db, ensureAuth } from '../firebase';
 import { useT } from '../i18n/I18nContext';
+import { hapticSuccess, hapticError, hapticLight } from '../hooks/useHaptic';
 import {
   Expense,
   EXPENSES,
@@ -360,6 +361,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Toast ──────────────────────────────────────────────────────────
   const showToast = useCallback((type: Toast['type'], message: string) => {
     const id = Date.now().toString();
+    if (type === 'success') hapticSuccess();
+    else if (type === 'error') hapticError();
+    else hapticLight();
     setToasts(prev => [...prev, { id, type, message }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
   }, []);

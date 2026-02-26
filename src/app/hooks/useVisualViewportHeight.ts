@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Returns a CSS height value that tracks the visual viewport height.
@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
  */
 export function useVisualViewportHeight() {
   const [height, setHeight] = useState('100dvh');
+  const scrollResetTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -14,19 +15,25 @@ export function useVisualViewportHeight() {
 
     const update = () => {
       setHeight(`${vv.height}px`);
-      // iOS Safari can scroll the window behind a fixed overlay when
-      // the keyboard opens; reset it so the overlay doesn't get stuck.
-      if (window.scrollY !== 0) window.scrollTo(0, 0);
+
+      // iOS Safari can scroll the window behind a fixed overlay when the
+      // keyboard opens.  Reset it, but with a delay so we don't interfere
+      // with touch-event processing (which caused "tap does nothing" bugs).
+      clearTimeout(scrollResetTimer.current);
+      scrollResetTimer.current = setTimeout(() => {
+        if (window.scrollY !== 0) window.scrollTo(0, 0);
+      }, 120);
     };
 
     // Set initial value
     update();
 
+    // Only listen to resize (keyboard open/close).
+    // The scroll event fired too often and swallowed touch events.
     vv.addEventListener('resize', update);
-    vv.addEventListener('scroll', update);
     return () => {
       vv.removeEventListener('resize', update);
-      vv.removeEventListener('scroll', update);
+      clearTimeout(scrollResetTimer.current);
     };
   }, []);
 

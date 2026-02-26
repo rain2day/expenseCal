@@ -3,6 +3,7 @@ import { Check, PartyPopper, Wallet, Trash2, ChevronDown, ChevronUp, CreditCard 
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { MemberAvatar, BalanceBadge, StaggerContainer, StaggerItem, CategoryIcon } from '../components/SharedComponents';
+import { hapticSuccess } from '../hooks/useHaptic';
 import { FUND_PAYER_ID } from '../data/sampleData';
 import { useT } from '../i18n/I18nContext';
 
@@ -138,6 +139,7 @@ export function Settlement() {
   useEffect(() => {
     if (allDone && settlements.length > 0) {
       setShowConfetti(true);
+      hapticSuccess();
       setTimeout(() => setShowConfetti(false), 3000);
     }
   }, [allDone, settlements.length]);
@@ -198,7 +200,7 @@ export function Settlement() {
         {/* ── Contribution History ──────────────────────────────── */}
         {contributions.length > 0 && (
           <StaggerItem>
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden glass-rim">
             <button
               onClick={() => setShowContribHistory(v => !v)}
               className="w-full flex items-center justify-between px-4 py-3 text-left"
@@ -283,7 +285,7 @@ export function Settlement() {
         {/* ── Advance Payment History (墊付記錄) ──────────────────── */}
         {advancePayments.length > 0 && (
           <StaggerItem>
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden glass-rim">
             <button
               onClick={() => setShowAdvanceHistory(v => !v)}
               className="w-full flex items-center justify-between px-4 py-3 text-left"
@@ -348,7 +350,7 @@ export function Settlement() {
               const isNeg = b.balance < 0;
               return (
                 <div key={b.member.id}
-                  className="bg-card border border-border rounded-2xl overflow-hidden flex">
+                  className="bg-card border border-border rounded-2xl overflow-hidden flex glass-rim">
                   {/* Color strip */}
                   <div className="w-1 flex-shrink-0"
                     style={{ background: isPos ? '#72A857' : isNeg ? '#D05242' : '#3E2015' }} />
