@@ -163,6 +163,7 @@ export function Layout() {
       </AnimatePresence>
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────────── */}
+      {!isAddExpense && (
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-sidebar neu-nav-bar flex items-center justify-around px-1"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)', paddingTop: '10px' }}
       >
@@ -182,9 +183,10 @@ export function Layout() {
           </div>
         </LayoutGroup>
       </nav>
+      )}
 
       {/* ── FAB (mobile only) ─────────────────────────────────────── */}
-      {showFAB && (
+      {showFAB && !isAddExpense && (
         <button
           type="button"
           aria-label={t.nav.addExpense}
