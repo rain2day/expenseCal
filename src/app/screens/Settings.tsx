@@ -382,9 +382,9 @@ export function Settings() {
           />
           <SettingItem
             label={t.settings.language}
-            value={locale === 'zh' ? t.settings.langZh : t.settings.langJa}
+            value={locale === 'zh' ? t.settings.langZh : locale === 'ja' ? t.settings.langJa : t.settings.langEn}
             icon={<Globe size={14} strokeWidth={2} />}
-            onClick={() => setLocale(locale === 'zh' ? 'ja' : 'zh')}
+            onClick={() => setLocale(locale === 'zh' ? 'ja' : locale === 'ja' ? 'en' : 'zh')}
           />
         </SectionCard>
         </StaggerItem>

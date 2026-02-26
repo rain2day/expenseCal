@@ -283,6 +283,7 @@ export const zh: Translations = {
     // Language labels
     langZh: '繁體中文',
     langJa: '日本語',
+    langEn: 'English',
     // Group switching
     sectionGroups: '我的群組',
     currentGroup: '使用中',

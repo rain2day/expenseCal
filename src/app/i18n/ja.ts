@@ -283,6 +283,7 @@ export const ja: Translations = {
     // Language labels
     langZh: '繁体字中国語',
     langJa: '日本語',
+    langEn: '英語',
     // Group switching
     sectionGroups: 'マイグループ',
     currentGroup: '使用中',

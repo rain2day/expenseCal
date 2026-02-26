@@ -1,4 +1,4 @@
-export type Locale = 'zh' | 'ja';
+export type Locale = 'zh' | 'ja' | 'en';
 
 export interface Translations {
   common: {
@@ -274,6 +274,7 @@ export interface Translations {
     // Language labels
     langZh: string;
     langJa: string;
+    langEn: string;
     // Group switching
     sectionGroups: string;
     currentGroup: string;

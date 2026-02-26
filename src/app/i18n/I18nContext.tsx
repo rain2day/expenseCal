@@ -2,14 +2,15 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 import { Locale, Translations } from './types';
 import { zh } from './zh';
 import { ja } from './ja';
+import { en } from './en';
 
 const STORAGE_KEY = 'gcd-locale';
-const translations: Record<Locale, Translations> = { zh, ja };
+const translations: Record<Locale, Translations> = { zh, ja, en };
 
 function getInitialLocale(): Locale {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'zh' || stored === 'ja') return stored;
+    if (stored === 'zh' || stored === 'ja' || stored === 'en') return stored;
   } catch {}
   return 'zh';
 }
