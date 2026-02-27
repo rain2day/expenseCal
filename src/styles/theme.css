@@ -704,23 +704,21 @@
   transform: translateZ(0);
 }
 
-/* Light mode glass panels */
+/* Light mode glass panels — enhanced frosted glass */
 .geo-bg .bg-card,
 .geo-bg .bg-popover {
-  /* rgba(255,255,255,0.16) = --panel-surface-light */
-  background-color: rgba(255, 255, 255, 0.16) !important;
+  background-color: rgba(255, 255, 255, 0.22) !important;
   background-image: linear-gradient(
     158deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    rgba(255, 255, 255, 0.04) 52%,
-    rgba(152, 101, 63, 0.04) 100%
+    rgba(255, 255, 255, 0.20) 0%,
+    rgba(255, 255, 255, 0.06) 52%,
+    rgba(152, 101, 63, 0.05) 100%
   ) !important;
-  /* rgba(255,255,255,0.24) = --panel-border-light */
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.32);
   box-shadow:
-    0 8px 20px rgba(8, 12, 28, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.07);
+    0 8px 24px rgba(8, 12, 28, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.10);
 }
 
 .geo-bg .bg-sidebar {
@@ -731,29 +729,131 @@
   border-color: rgba(255, 255, 255, 0.24);
 }
 
-/* Dark mode glass panels — ~35% opaque so geometric BG shows through */
+/* Dark mode glass panels — enhanced frosted glass with inner glow */
 html.geo-bg.dark .bg-card,
 html.geo-bg.dark .bg-popover,
 html.dark-theme.geo-bg .bg-card,
 html.dark-theme.geo-bg .bg-popover {
-  background-color: rgba(30, 32, 48, 0.36) !important;
+  background-color: rgba(30, 32, 48, 0.38) !important;
   background-image: linear-gradient(
     138deg,
-    rgba(152, 101, 63, 0.08) 0%,
-    rgba(94, 70, 62, 0.05) 55%,
-    rgba(37, 40, 62, 0.06) 100%
+    rgba(152, 101, 63, 0.10) 0%,
+    rgba(94, 70, 62, 0.06) 55%,
+    rgba(37, 40, 62, 0.07) 100%
   ) !important;
-  border-color: rgba(120, 100, 80, 0.22);
+  border-color: rgba(120, 100, 80, 0.26);
   box-shadow:
-    0 10px 24px rgba(4, 8, 20, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    0 10px 24px rgba(4, 8, 20, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
 html.geo-bg.dark .bg-sidebar,
 html.dark-theme.geo-bg .bg-sidebar {
   background-color: rgba(30, 32, 48, 0.22) !important;
   border-color: rgba(120, 100, 80, 0.18);
+}
+
+/* ── Glass Buttons & Inputs (geo-bg mode) ────────────────────────────
+     Same Safari-safe approach as glass panels: hardcoded rgba(), no vars
+     in -webkit-backdrop-filter. !important overrides Tailwind utilities.
+     box-shadow intentionally NOT !important so inline styles (e.g. FAB) win.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Shared backdrop-filter for all secondary elements */
+.geo-bg .bg-secondary {
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  transform: translateZ(0);
+}
+
+/* Light mode secondary glass (inputs, tabs, secondary buttons) */
+.geo-bg .bg-secondary {
+  background-color: rgba(255, 255, 255, 0.20) !important;
+  border-color: rgba(255, 255, 255, 0.30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Dark mode secondary glass */
+html.geo-bg.dark .bg-secondary,
+html.dark-theme.geo-bg .bg-secondary {
+  background-color: rgba(40, 42, 62, 0.40) !important;
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Primary action buttons — colored glass */
+.geo-bg button.bg-primary,
+.geo-bg a.bg-primary {
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  background-color: rgba(221, 132, 60, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 6px 20px rgba(221, 132, 60, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  transform: translateZ(0);
+}
+
+.geo-bg button.bg-primary:hover,
+.geo-bg a.bg-primary:hover {
+  background-color: rgba(221, 132, 60, 0.82) !important;
+}
+
+.geo-bg button.bg-primary:active,
+.geo-bg a.bg-primary:active {
+  background-color: rgba(221, 132, 60, 0.88) !important;
+}
+
+/* Dark mode primary buttons */
+html.geo-bg.dark button.bg-primary,
+html.geo-bg.dark a.bg-primary,
+html.dark-theme.geo-bg button.bg-primary,
+html.dark-theme.geo-bg a.bg-primary {
+  background-color: rgba(221, 132, 60, 0.62) !important;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 6px 20px rgba(221, 132, 60, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+html.geo-bg.dark button.bg-primary:hover,
+html.geo-bg.dark a.bg-primary:hover,
+html.dark-theme.geo-bg button.bg-primary:hover,
+html.dark-theme.geo-bg a.bg-primary:hover {
+  background-color: rgba(221, 132, 60, 0.72) !important;
+}
+
+html.geo-bg.dark button.bg-primary:active,
+html.geo-bg.dark a.bg-primary:active,
+html.dark-theme.geo-bg button.bg-primary:active,
+html.dark-theme.geo-bg a.bg-primary:active {
+  background-color: rgba(221, 132, 60, 0.78) !important;
+}
+
+/* Destructive buttons — red glass */
+.geo-bg button.bg-destructive {
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  background-color: rgba(208, 82, 66, 0.72) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 4px 16px rgba(208, 82, 66, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  transform: translateZ(0);
+}
+
+html.geo-bg.dark button.bg-destructive,
+html.dark-theme.geo-bg button.bg-destructive {
+  background-color: rgba(208, 82, 66, 0.60) !important;
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* ── Random Geometric Layer (React-generated) ────────────────────────── */
