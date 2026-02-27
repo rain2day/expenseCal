@@ -95,7 +95,7 @@ export function GroupBuyDetail() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-transparent flex flex-col overflow-hidden">
       {showConfetti && <MiniConfetti />}
 
       {/* ── Header ─────────────────────────────────────────────── */}

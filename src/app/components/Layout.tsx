@@ -95,6 +95,8 @@ export function Layout() {
   // Solution: render AddExpense as a sibling OUTSIDE <main>, and keep the
   // underlying page visible by freezing the AnimatePresence key.
   const isAddExpense = location.pathname === '/app/add-expense';
+  // Full-screen overlay routes that should hide bottom nav & FAB
+  const isFullOverlay = isAddExpense || location.pathname.startsWith('/app/group-buy');
   const prevPageRef = useRef(location.pathname);
   // Remember last "real" page path (anything except add-expense)
   if (!isAddExpense) prevPageRef.current = location.pathname;
@@ -163,7 +165,7 @@ export function Layout() {
       </AnimatePresence>
 
       {/* ── Mobile Bottom Nav ──────────────────────────────────────── */}
-      {!isAddExpense && (
+      {!isFullOverlay && (
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-sidebar neu-nav-bar flex items-center justify-around px-1"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)', paddingTop: '10px' }}
       >
@@ -186,7 +188,7 @@ export function Layout() {
       )}
 
       {/* ── FAB (mobile only) ─────────────────────────────────────── */}
-      {showFAB && !isAddExpense && (
+      {showFAB && !isFullOverlay && (
         <button
           type="button"
           aria-label={t.nav.addExpense}
