@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { X, Calendar, Check, Wallet, Lock, ShoppingBag, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
 import { MemberAvatar, CategoryBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
@@ -274,41 +274,39 @@ export function AddExpense() {
           {/* Type toggle: group / personal (hide during edit) */}
           {!isEdit && !isEditPersonal && (
             <StaggerItem>
+            <LayoutGroup id="expense-type-tabs">
             <div className="flex gap-1 bg-secondary rounded-xl p-1">
-              <button
-                onClick={() => setExpenseType('group')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors
-                  ${expenseType === 'group'
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground'
-                  }`}
-              >
-                <Wallet size={14} strokeWidth={2} />
-                {t.addExpense.typeGroup}
-              </button>
-              <button
-                onClick={() => setExpenseType('personal')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors
-                  ${isPersonal
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground'
-                  }`}
-              >
-                <Lock size={14} strokeWidth={2} />
-                {t.addExpense.typePersonal}
-              </button>
-              <button
-                onClick={() => setExpenseType('groupBuy')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 transition-colors
-                  ${isGroupBuy
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground'
-                  }`}
-              >
-                <ShoppingBag size={14} strokeWidth={2} />
-                {t.groupBuy.title}
-              </button>
+              {([
+                { key: 'group' as const, icon: Wallet, label: t.addExpense.typeGroup },
+                { key: 'personal' as const, icon: Lock, label: t.addExpense.typePersonal },
+                { key: 'groupBuy' as const, icon: ShoppingBag, label: t.groupBuy.title },
+              ]).map(({ key, icon: Icon, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setExpenseType(key)}
+                  className="flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 relative overflow-hidden"
+                >
+                  {expenseType === key && (
+                    <motion.div
+                      layoutId="expense-type-tab"
+                      className="absolute inset-0 bg-card rounded-lg shadow-sm"
+                      style={{ zIndex: 0 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 25,
+                        mass: 0.8,
+                      }}
+                    />
+                  )}
+                  <span className={`relative z-10 flex items-center gap-1.5 transition-colors duration-200 ${expenseType === key ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <Icon size={14} strokeWidth={2} />
+                    {label}
+                  </span>
+                </button>
+              ))}
             </div>
+            </LayoutGroup>
             </StaggerItem>
           )}
 
