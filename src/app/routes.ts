@@ -15,6 +15,8 @@ import { ComponentLibrary } from './screens/ComponentLibrary';
 import { JoinGroup } from './screens/JoinGroup';
 import { GroupBuyForm } from './screens/GroupBuyForm';
 import { GroupBuyDetail } from './screens/GroupBuyDetail';
+import { V2Layout } from './v2/V2Layout';
+import { DashboardV2 } from './v2/DashboardV2';
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -56,6 +58,19 @@ export const router = createBrowserRouter([
       { path: 'group-buy/:groupBuyId', Component: GroupBuyDetail },
       { path: 'settings', Component: Settings },
       { path: 'theme', Component: ThemeSettings },
+    ],
+  },
+  {
+    path: '/v2',
+    Component: V2Layout,
+    loader: () => {
+      const gid = localStorage.getItem('gcd-groupId');
+      if (!gid) return redirect('/');
+      return null;
+    },
+    children: [
+      { index: true, loader: () => redirect('/v2/dashboard') },
+      { path: 'dashboard', Component: DashboardV2 },
     ],
   },
   {
