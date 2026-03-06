@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { getCurrencyMinorDigits } from '../data/sampleData';
 import Tesseract from 'tesseract.js';
+import { useAppPaths } from '../routing/appPaths';
 
 type ScanTab = 'scan' | 'upload';
 type ScanState = 'idle' | 'scanning' | 'result';
@@ -429,6 +430,7 @@ async function rotateVariant(imageSource: string, degree: number): Promise<strin
 
 export function ReceiptScan() {
   const navigate = useNavigate();
+  const { appPath } = useAppPaths();
   const { showToast, currency } = useApp();
   const { t, locale } = useT();
 
@@ -712,7 +714,7 @@ export function ReceiptScan() {
   // ── Confirm → navigate to AddExpense ──────────────────────────────
   function handleConfirm() {
     showToast('success', t.receiptScan.recognized);
-    navigate('/app/add-expense', {
+    navigate(appPath('/add-expense'), {
       state: {
         scanData: {
           amount: resultAmount,
@@ -725,7 +727,7 @@ export function ReceiptScan() {
   }
 
   function handleManualEntry() {
-    navigate('/app/add-expense');
+    navigate(appPath('/add-expense'));
   }
 
   // ── Reset ─────────────────────────────────────────────────────────

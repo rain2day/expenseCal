@@ -9,6 +9,7 @@ import {
   Coins,
   HandCoins,
   Receipt,
+  ShoppingBag,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -17,6 +18,7 @@ import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { FUND_PAYER_ID, splitAmountEvenly, type Contribution, type Expense, type Settlement } from '../data/sampleData';
 import { getV2Copy } from './copy';
+import { useAppPaths } from '../routing/appPaths';
 
 type AttentionItem = {
   tone: 'warm' | 'critical' | 'calm';
@@ -114,6 +116,7 @@ export function DashboardV2() {
     getMember,
   } = useApp();
   const { locale, t } = useT();
+  const { appPath, v1Path } = useAppPaths();
   const copy = getV2Copy(locale);
 
   const localeTag = locale === 'zh' ? 'zh-HK' : locale === 'ja' ? 'ja-JP' : 'en-US';
@@ -171,14 +174,14 @@ export function DashboardV2() {
         tone: 'critical',
         title: copy.fundNegative,
         detail: copy.fundNegativeDetail,
-        to: '/app/settlement',
+        to: appPath('/settlement'),
       });
     } else if (totalContributions > 0 && fundBalance <= totalContributions * 0.35) {
       items.push({
         tone: 'warm',
         title: copy.fundLow,
         detail: copy.fundLowDetail,
-        to: '/app/settlement',
+        to: appPath('/settlement'),
       });
     }
 
@@ -187,7 +190,7 @@ export function DashboardV2() {
         tone: 'calm',
         title: copy.pendingTransfers,
         detail: copy.pendingTransfersDetail,
-        to: '/app/settlement',
+        to: appPath('/settlement'),
       });
     }
 
@@ -196,7 +199,7 @@ export function DashboardV2() {
         tone: 'warm',
         title: copy.memberAdvance,
         detail: copy.memberAdvanceDetail,
-        to: '/app/settlement',
+        to: appPath('/settlement'),
       });
     }
 
@@ -205,12 +208,12 @@ export function DashboardV2() {
         tone: 'calm',
         title: copy.addFirstExpense,
         detail: copy.addFirstExpenseDetail,
-        to: '/app/add-expense',
+        to: appPath('/add-expense'),
       });
     }
 
     return items.slice(0, 3);
-  }, [copy, expenses.length, fundBalance, memberAdvance, pendingSettlements.length, totalContributions]);
+  }, [appPath, copy, expenses.length, fundBalance, memberAdvance, pendingSettlements.length, totalContributions]);
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -350,18 +353,22 @@ export function DashboardV2() {
               </div>
             )}
 
-            <div className="mt-5 grid gap-2 sm:grid-cols-3">
-              <Link to="/app/settlement" className="v2-action-button v2-action-button-primary">
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <Link to={appPath('/settlement')} className="v2-action-button v2-action-button-primary">
                 <ArrowLeftRight size={15} strokeWidth={2.2} />
                 {t.dashboard.viewSettlement}
               </Link>
-              <Link to="/app/expenses" className="v2-action-button">
+              <Link to={appPath('/expenses')} className="v2-action-button">
                 <Receipt size={15} strokeWidth={2.2} />
                 {t.nav.expenses}
               </Link>
-              <Link to="/app/members" className="v2-action-button">
+              <Link to={appPath('/members')} className="v2-action-button">
                 <Users size={15} strokeWidth={2.2} />
                 {t.nav.members}
+              </Link>
+              <Link to={appPath('/group-buy')} className="v2-action-button">
+                <ShoppingBag size={15} strokeWidth={2.2} />
+                {t.groupBuy.title}
               </Link>
             </div>
           </article>
@@ -432,7 +439,7 @@ export function DashboardV2() {
               <p className="v2-kicker">{t.dashboard.recentExpenses}</p>
               <h2 className="mt-2 text-xl font-black text-white">{t.dashboard.recentExpenses}</h2>
             </div>
-            <Link to="/app/expenses" className="v2-action-button">
+            <Link to={appPath('/expenses')} className="v2-action-button">
               {t.dashboard.viewAll}
             </Link>
           </div>
@@ -488,7 +495,7 @@ export function DashboardV2() {
               <p className="v2-kicker">{copy.settlementQueue}</p>
               <h2 className="mt-2 text-xl font-black text-white">{copy.settlementQueue}</h2>
             </div>
-            <Link to="/app/settlement" className="v2-action-button">
+            <Link to={appPath('/settlement')} className="v2-action-button">
               {t.dashboard.viewSettlement}
             </Link>
           </div>
@@ -658,11 +665,11 @@ export function DashboardV2() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Link to="/app/dashboard" className="v2-action-button">
+              <Link to={v1Path('/dashboard')} className="v2-action-button">
                 <ArrowUpRight size={15} strokeWidth={2.2} />
                 v1 Dashboard
               </Link>
-              <Link to="/app/analytics" className="v2-action-button">
+              <Link to={appPath('/analytics')} className="v2-action-button">
                 <ChartNoAxesColumn size={15} strokeWidth={2.2} />
                 {t.nav.analytics}
               </Link>

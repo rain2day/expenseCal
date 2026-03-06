@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router';
 import { CATEGORY_CONFIG, FUND_PAYER_ID, formatAmountInput } from '../data/sampleData';
 import { StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { PdfReport } from '../components/PdfReport';
+import { useAppPaths } from '../routing/appPaths';
 
 interface SettingRow {
   label: string;
@@ -85,6 +86,7 @@ const CURRENCY_LABEL_KEYS: Record<string, string> = {
 
 export function Settings() {
   const navigate = useNavigate();
+  const { appPath, entryPath } = useAppPaths();
   const { t, locale, setLocale } = useT();
   const {
     groupName, setGroupName,
@@ -408,7 +410,7 @@ export function Settings() {
           <SettingItem
             label={t.settings.sectionTheme}
             icon={<Palette size={14} strokeWidth={2} />}
-            onClick={() => navigate('/app/theme')}
+            onClick={() => navigate(appPath('/theme'))}
           />
         </SectionCard>
         </StaggerItem>
@@ -573,8 +575,7 @@ export function Settings() {
           <div className="flex gap-2 px-4 py-3">
             <button
               onClick={() => {
-                const base = import.meta.env.BASE_URL || '/';
-                window.location.href = base + (base.endsWith('/') ? '' : '/') + '?new=1';
+                navigate(entryPath(true));
               }}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-secondary hover:bg-secondary/80 rounded-xl text-xs text-muted-foreground font-bold transition-colors active:scale-95"
             >
@@ -582,8 +583,7 @@ export function Settings() {
             </button>
             <button
               onClick={() => {
-                const base = import.meta.env.BASE_URL || '/';
-                window.location.href = base + (base.endsWith('/') ? '' : '/') + '?new=1';
+                navigate(entryPath(true));
               }}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-secondary hover:bg-secondary/80 rounded-xl text-xs text-muted-foreground font-bold transition-colors active:scale-95"
             >

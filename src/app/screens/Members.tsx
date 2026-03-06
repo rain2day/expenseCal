@@ -9,9 +9,11 @@ import { splitAmountEvenly } from '../data/sampleData';
 import { MemberAvatar, RoleBadge, BalanceBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { SwipeableRow } from '../components/SwipeableRow';
 import type { CategoryType } from '../data/sampleData';
+import { useAppPaths } from '../routing/appPaths';
 
 export function Members() {
   const navigate = useNavigate();
+  const { appPath, joinPath, absoluteUrl } = useAppPaths();
   const {
     balances, expenses, showToast, groupName, groupId, deleteMember, addMember, members, fmt,
     personalExpenses, loadPersonalExpenses, personalExpensesLoading, deletePersonalExpense,
@@ -188,7 +190,7 @@ export function Members() {
                       {/* Personal expenses preview */}
                       <div className="mt-3 pt-3 border-t border-border">
                         <button
-                          onClick={() => navigate(`/app/personal/${b.member.id}`)}
+                          onClick={() => navigate(appPath(`/personal/${b.member.id}`))}
                           className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-1 active:opacity-70 transition-opacity"
                         >
                           {t.personal.personalExpensesLabel}
@@ -221,7 +223,7 @@ export function Members() {
                                         icon: <Pencil size={14} strokeWidth={2} />,
                                         bgClass: 'bg-accent-bg',
                                         textClass: 'text-primary',
-                                        onClick: () => navigate('/app/add-expense', {
+                                        onClick: () => navigate(appPath('/add-expense'), {
                                           state: { personalMode: true, memberId: b.member.id, editPersonalExpense: pe },
                                         }),
                                       },
@@ -240,7 +242,7 @@ export function Members() {
                                   >
                                     <div
                                       className="flex items-center gap-2 px-3 py-2 bg-card cursor-pointer active:bg-secondary transition-colors"
-                                      onClick={() => navigate(`/app/personal/${b.member.id}`)}
+                                      onClick={() => navigate(appPath(`/personal/${b.member.id}`))}
                                     >
                                       <CategoryIcon category={pe.category as CategoryType} size="sm" />
                                       <div className="flex-1 min-w-0 flex items-center gap-1">
@@ -312,7 +314,7 @@ export function Members() {
 
         {/* ── Invite Section ─────────────────────────────────────────── */}
         {(() => {
-          const inviteUrl = `${window.location.origin}/join/${groupId || 'demo'}`;
+          const inviteUrl = absoluteUrl(joinPath(groupId || 'demo'));
 
           async function handleShare() {
             if (navigator.share) {

@@ -4,6 +4,7 @@ import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { db, ensureAuth } from '../firebase';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
+import { useAppPaths } from '../routing/appPaths';
 
 const MEMBER_COLORS = ['#DD843C','#C05A5A','#72A857','#5A7EC5','#C8914A','#9055A0','#5AABAB','#BD7A5A'];
 
@@ -18,6 +19,7 @@ type ExistingMember = { id: string; name: string; initials: string; color: strin
 export function JoinGroup() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
+  const { appPath, entryPath } = useAppPaths();
   const { joinGroup, enterGroup, showToast } = useApp();
   const { t } = useT();
 
@@ -68,7 +70,7 @@ export function JoinGroup() {
     try {
       await enterGroup(groupId);
       showToast('success', t.joinGroup.joinSuccess);
-      navigate('/app/dashboard');
+      navigate(appPath('/dashboard'));
     } catch (err) {
       console.error('Failed to enter group:', err);
       showToast('error', t.joinGroup.joinFailed);
@@ -90,7 +92,7 @@ export function JoinGroup() {
         role: 'member' as const,
       });
       showToast('success', t.joinGroup.joinSuccess);
-      navigate('/app/dashboard');
+      navigate(appPath('/dashboard'));
     } catch (err) {
       console.error('Failed to join group:', err);
       showToast('error', t.joinGroup.joinFailed);
@@ -105,7 +107,7 @@ export function JoinGroup() {
     try {
       await enterGroup(groupId);
       showToast('success', t.joinGroup.viewOnlySuccess);
-      navigate('/app/dashboard');
+      navigate(appPath('/dashboard'));
     } catch (err) {
       console.error('Failed to enter group:', err);
       showToast('error', t.joinGroup.joinFailed);
@@ -134,7 +136,7 @@ export function JoinGroup() {
               <h1 className="text-xl font-black text-foreground mb-2">{t.joinGroup.notFound}</h1>
               <p className="text-sm text-muted-foreground mb-6">{t.joinGroup.notFoundDesc}</p>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate(entryPath())}
                 className="w-full bg-primary text-white rounded-xl py-3 font-bold active:scale-98 transition-transform"
               >
                 {t.joinGroup.backHome}

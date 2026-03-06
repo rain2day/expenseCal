@@ -6,6 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useApp } from '../context/AppContext';
 import { getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
 import { useT } from '../i18n/I18nContext';
+import { useAppPaths } from '../routing/appPaths';
 
 const MEMBER_COLORS = ['#DD843C','#C05A5A','#72A857','#5A7EC5','#C8914A','#9055A0','#5AABAB','#BD7A5A'];
 const CURRENCIES = [
@@ -31,6 +32,7 @@ function getInitials(name: string) {
 
 export function Onboarding() {
   const navigate = useNavigate();
+  const { appPath, joinPath, absoluteUrl } = useAppPaths();
   const { createGroup, enterDemoMode, showToast, groupId } = useApp();
   const { t, locale } = useT();
   const [searchParams] = useSearchParams();
@@ -104,7 +106,7 @@ export function Onboarding() {
   }
 
   function handleFinish() {
-    navigate('/app/dashboard');
+    navigate(appPath('/dashboard'));
   }
 
   function handleJoinSubmit() {
@@ -113,7 +115,7 @@ export function Onboarding() {
     // If user pasted a full URL, extract the groupId from it
     const urlMatch = input.match(/\/join\/(.+)$/);
     const gid = urlMatch ? urlMatch[1] : input;
-    navigate(`/join/${gid}`);
+    navigate(joinPath(gid));
   }
 
   const currSel = CURRENCIES.find(c => c.code === currency)!;
@@ -188,7 +190,7 @@ export function Onboarding() {
               <div className="mt-2 pt-3 border-t border-border">
                 {isNewGroupFlow ? (
                   <button
-                    onClick={() => navigate('/app/dashboard')}
+                    onClick={() => navigate(appPath('/dashboard'))}
                     className="w-full text-subtle text-xs py-1.5 flex items-center justify-center gap-1.5 active:opacity-70"
                   >
                     <ArrowLeft size={13} strokeWidth={2} /> {t.onboarding.backToGroup}
@@ -198,7 +200,7 @@ export function Onboarding() {
                     onClick={() => {
                       enterDemoMode();
                       showToast('info', t.onboarding.demoLoaded);
-                      navigate('/app/dashboard');
+                      navigate(appPath('/dashboard'));
                     }}
                     className="w-full text-subtle text-xs py-1.5 flex items-center justify-center gap-1.5 active:opacity-70"
                   >
@@ -354,7 +356,7 @@ export function Onboarding() {
               </div>
 
               {(() => {
-                const inviteUrl = `${window.location.origin}/join/${createdGroupId || 'demo'}`;
+                const inviteUrl = absoluteUrl(joinPath(createdGroupId || 'demo'));
                 return (
                   <>
                     <div className="w-40 h-40 bg-foreground/10 rounded-2xl mx-auto mb-4 flex items-center justify-center p-2">

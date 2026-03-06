@@ -37,6 +37,20 @@ export const router = createBrowserRouter([
     Component: JoinGroup,
   },
   {
+    path: '/v2/start',
+    Component: Onboarding,
+    loader: ({ request }) => {
+      const gid = localStorage.getItem('gcd-groupId');
+      const url = new URL(request.url);
+      if (gid && !url.searchParams.has('new')) return redirect('/v2/dashboard');
+      return null;
+    },
+  },
+  {
+    path: '/v2/join/:groupId',
+    Component: JoinGroup,
+  },
+  {
     path: '/app',
     Component: Layout,
     loader: () => {
@@ -65,12 +79,23 @@ export const router = createBrowserRouter([
     Component: V2Layout,
     loader: () => {
       const gid = localStorage.getItem('gcd-groupId');
-      if (!gid) return redirect('/');
+      if (!gid) return redirect('/v2/start');
       return null;
     },
     children: [
       { index: true, loader: () => redirect('/v2/dashboard') },
       { path: 'dashboard', Component: DashboardV2 },
+      { path: 'expenses', Component: ExpenseHistory },
+      { path: 'add-expense', Component: AddExpense },
+      { path: 'scan', Component: ReceiptScan },
+      { path: 'settlement', Component: Settlement },
+      { path: 'analytics', Component: Analytics },
+      { path: 'members', Component: Members },
+      { path: 'personal/:memberId', Component: PersonalExpenses },
+      { path: 'group-buy', Component: GroupBuyForm },
+      { path: 'group-buy/:groupBuyId', Component: GroupBuyDetail },
+      { path: 'settings', Component: Settings },
+      { path: 'theme', Component: ThemeSettings },
     ],
   },
   {
