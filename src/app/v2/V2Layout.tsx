@@ -13,11 +13,11 @@ import {
   Settings,
   Users,
 } from 'lucide-react';
-import { AddExpense } from '../screens/AddExpense';
 import { ToastContainer } from '../components/SharedComponents';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
 import { useAppPaths } from '../routing/appPaths';
+import { AddExpenseV2 } from './AddExpenseV2';
 import { getV2Copy } from './copy';
 import './v2.css';
 
@@ -213,7 +213,7 @@ export function V2Layout() {
         </main>
 
         <AnimatePresence>
-          {isAddExpense && <AddExpense key="v2-add-expense-overlay" />}
+          {isAddExpense && <AddExpenseV2 key="v2-add-expense-overlay" />}
         </AnimatePresence>
 
         {!isFullOverlay && (
