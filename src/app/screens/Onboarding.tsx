@@ -66,6 +66,11 @@ export function Onboarding() {
   async function handleNext() {
     if (step === 2 && (!gName.trim() || !gBudget)) return;
     if (step === 3) {
+      // Validate that at least one member has been added
+      if (members.length === 0) {
+        showToast('error', t.onboarding.emptyHint);
+        return;
+      }
       // Create group before showing share step so we have the groupId for QR
       if (isCreating) return;
       setIsCreating(true);
@@ -77,7 +82,9 @@ export function Onboarding() {
           setIsCreating(false);
           return;
         }
-        const gid = await createGroup(
+
+        // Add timeout to prevent hanging
+        const createGroupPromise = createGroup(
           gName || '核爆都唔割鳩',
           perPersonMinor,
           currSymbol,
@@ -89,12 +96,21 @@ export function Onboarding() {
             role: (i === 0 ? 'admin' : 'member') as 'admin' | 'member',
           }))
         );
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('群組建立超時，請檢查網路連接')), 30000);
+        });
+
+        const gid = await Promise.race([createGroupPromise, timeoutPromise]);
         setCreatedGroupId(gid);
         showToast('success', t.onboarding.groupCreated);
         setStep(4);
       } catch (err) {
         console.error('Failed to create group:', err);
-        showToast('error', t.onboarding.groupCreateFailed);
+        const errorMessage = err instanceof Error && err.message.includes('超時')
+          ? err.message
+          : t.onboarding.groupCreateFailed;
+        showToast('error', errorMessage);
       } finally {
         setIsCreating(false);
       }
@@ -328,11 +344,14 @@ export function Onboarding() {
 
               <button
                 onClick={handleNext}
-                disabled={isCreating}
-                className="w-full bg-primary disabled:opacity-40 text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 active:scale-98 transition-all"
+                disabled={isCreating || members.length === 0}
+                className="w-full bg-primary disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl py-3 font-bold flex items-center justify-center gap-2 active:scale-98 transition-all"
               >
                 {isCreating ? (
-                  <>{t.onboarding.creating}</>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>{t.onboarding.creating}</span>
+                  </div>
                 ) : (
                   <>{t.common.next} <ArrowRight size={16} strokeWidth={2} /></>
                 )}
