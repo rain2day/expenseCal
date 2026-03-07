@@ -84,7 +84,7 @@ const CURRENCY_LABEL_KEYS: Record<string, string> = {
   '฿': 'currTHB',
 };
 
-export function Settings() {
+export function SettingsV2() {
   const navigate = useNavigate();
   const { appPath, entryPath } = useAppPaths();
   const { t, locale, setLocale } = useT();

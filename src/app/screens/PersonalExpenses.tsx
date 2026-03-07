@@ -7,6 +7,7 @@ import { useT } from '../i18n/I18nContext';
 import { CategoryType } from '../data/sampleData';
 import { CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { SwipeableRow } from '../components/SwipeableRow';
+import { useAppPaths } from '../routing/appPaths';
 
 const CATEGORY_COLORS: Record<CategoryType, string> = {
   food: '#DD843C',
@@ -20,6 +21,7 @@ const CATEGORY_COLORS: Record<CategoryType, string> = {
 export function PersonalExpenses() {
   const { memberId } = useParams<{ memberId: string }>();
   const navigate = useNavigate();
+  const { appPath } = useAppPaths();
   const {
     getMember, personalExpenses, loadPersonalExpenses,
     deletePersonalExpense, personalExpensesLoading,
@@ -152,7 +154,7 @@ export function PersonalExpenses() {
                           icon: <Pencil size={16} strokeWidth={2} />,
                           bgClass: 'bg-accent-bg',
                           textClass: 'text-primary',
-                          onClick: () => navigate('/app/add-expense', {
+                          onClick: () => navigate(appPath('/add-expense'), {
                             state: { personalMode: true, memberId, editPersonalExpense: exp },
                           }),
                         },

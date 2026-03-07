@@ -8,6 +8,7 @@ import { SwipeableRow } from '../components/SwipeableRow';
 import { AnimatePresence, motion } from 'motion/react';
 import { useT } from '../i18n/I18nContext';
 import { Translations } from '../i18n/types';
+import { useAppPaths } from '../routing/appPaths';
 
 function groupByDate(expenses: ReturnType<typeof useApp>['expenses'], t: Translations) {
   const today = new Date().toISOString().split('T')[0];
@@ -24,6 +25,7 @@ function groupByDate(expenses: ReturnType<typeof useApp>['expenses'], t: Transla
 
 export function ExpenseHistory() {
   const navigate = useNavigate();
+  const { appPath } = useAppPaths();
   const { expenses, deleteExpense, showToast, getMember, fmt, members } = useApp();
   const { t } = useT();
   const [search, setSearch]     = useState('');
@@ -140,7 +142,7 @@ export function ExpenseHistory() {
                         icon: <Pencil size={16} strokeWidth={2} />,
                         bgClass: 'bg-accent-bg',
                         textClass: 'text-primary',
-                        onClick: () => navigate('/app/add-expense', { state: { editExpense: exp } }),
+                        onClick: () => navigate(appPath('/add-expense'), { state: { editExpense: exp } }),
                       },
                       {
                         label: t.expenseHistory.deleteAction,

@@ -16,7 +16,7 @@ function getInitials(name: string) {
 
 type ExistingMember = { id: string; name: string; initials: string; color: string };
 
-export function JoinGroup() {
+export function JoinGroupV2() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { appPath, entryPath } = useAppPaths();

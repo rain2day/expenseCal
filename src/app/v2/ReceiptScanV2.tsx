@@ -428,7 +428,7 @@ async function rotateVariant(imageSource: string, degree: number): Promise<strin
   });
 }
 
-export function ReceiptScan() {
+export function ReceiptScanV2() {
   const navigate = useNavigate();
   const { appPath } = useAppPaths();
   const { showToast, currency } = useApp();
