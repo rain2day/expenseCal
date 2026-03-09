@@ -63,25 +63,44 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
-const CURRENCY_CODES = ['¥', '$', 'HK$', '€', '£', 'NT$', 'RM', 'S$', '₩', '฿'] as const;
+const CURRENCY_CODES = ['¥', '$', 'CN¥', 'HK$', 'NT$', '€', '£', 'A$', 'C$', 'RM', 'S$', '₱', '₩', '฿', '₫', 'Rp'] as const;
 
 const SYMBOL_TO_ISO: Record<string, string> = {
-  '¥': 'JPY', '$': 'USD', 'HK$': 'HKD', '€': 'EUR',
-  '£': 'GBP', 'NT$': 'TWD', 'RM': 'MYR', 'S$': 'SGD',
-  '₩': 'KRW', '฿': 'THB',
+  '¥': 'JPY',
+  '$': 'USD',
+  'CN¥': 'CNY',
+  'HK$': 'HKD',
+  'NT$': 'TWD',
+  '€': 'EUR',
+  '£': 'GBP',
+  'A$': 'AUD',
+  'C$': 'CAD',
+  'RM': 'MYR',
+  'S$': 'SGD',
+  '₱': 'PHP',
+  '₩': 'KRW',
+  '฿': 'THB',
+  '₫': 'VND',
+  'Rp': 'IDR',
 };
 
 const CURRENCY_LABEL_KEYS: Record<string, string> = {
   '¥': 'currJPY',
   '$': 'currUSD',
+  'CN¥': 'currCNY',
   'HK$': 'currHKD',
+  'NT$': 'currTWD',
   '€': 'currEUR',
   '£': 'currGBP',
-  'NT$': 'currTWD',
+  'A$': 'currAUD',
+  'C$': 'currCAD',
   'RM': 'currMYR',
   'S$': 'currSGD',
+  '₱': 'currPHP',
   '₩': 'currKRW',
   '฿': 'currTHB',
+  '₫': 'currVND',
+  'Rp': 'currIDR',
 };
 
 export function Settings() {

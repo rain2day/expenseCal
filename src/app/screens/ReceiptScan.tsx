@@ -20,7 +20,7 @@ const TOTAL_HINT_RE =
 const SUBTOTAL_HINT_RE = /(?:小計|小计|subtotal)/i;
 const AMOUNT_NOISE_RE =
   /(?:tax|稅|税|discount|折扣|值引|change|找零|cash|card|visa|master|tel|電話|phone|qty|数量|item|table|seat|order)/i;
-const CURRENCY_HINT_RE = /(HK\$|NT\$|S\$|US\$|RM|JPY|USD|EUR|GBP|CNY|RMB|[¥￥$€£₩฿])/i;
+const CURRENCY_HINT_RE = /(CN¥|HK\$|NT\$|A\$|C\$|S\$|US\$|RM|Rp|₱|₫|JPY|USD|CNY|RMB|AUD|CAD|EUR|GBP|PHP|VND|IDR|[¥￥$€£₩฿])/i;
 const MERCHANT_BLOCK_RE =
   /(?:total|subtotal|tax|receipt|invoice|amount|change|cash|card|visa|master|電話|tel|www\.|http|date|time|table|請求|金額|合計|小計)/i;
 
@@ -101,7 +101,7 @@ function extractAmountCandidates(lines: string[], minorDigits: number): AmountCa
     if (i >= Math.max(0, lines.length - 5)) lineScore += 6;
 
     const amountTokenRe =
-      /(HK\$|NT\$|S\$|US\$|RM|JPY|USD|EUR|GBP|CNY|RMB|[¥￥$€£₩฿])?\s*([0-9OoIl]{2,}(?:[,\.\s][0-9OoIl]{2,})*(?:[.,][0-9OoIl]{1,2})?)/gi;
+      /(CN¥|HK\$|NT\$|A\$|C\$|S\$|US\$|RM|Rp|₱|₫|JPY|USD|CNY|RMB|AUD|CAD|EUR|GBP|PHP|VND|IDR|[¥￥$€£₩฿])?\s*([0-9OoIl]{2,}(?:[,\.\s][0-9OoIl]{2,})*(?:[.,][0-9OoIl]{1,2})?)/gi;
     for (const m of line.matchAll(amountTokenRe)) {
       const currencyMarker = m[1] ?? '';
       const rawToken = m[2] ?? '';
@@ -610,7 +610,7 @@ export function ReceiptScan() {
           totalPasses += amountTargets.length;
           await worker.setParameters({
             tessedit_pageseg_mode: '6',
-            tessedit_char_whitelist: '0123456789.,:/-¥￥$HKNTSRMUSDEURGBPCNYJPY年月日',
+            tessedit_char_whitelist: '0123456789.,:/-¥￥$₱₫ABCDEFGHIJKLMNOPQRSTUVWXYZ年月日',
           } as Record<string, string>);
 
           for (const target of amountTargets) {

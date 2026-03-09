@@ -113,16 +113,21 @@ export const CURRENCY = '¥';
 const CURRENCY_CODE_TO_SYMBOL: Record<string, string> = {
   JPY: '¥',
   USD: '$',
+  CNY: 'CN¥',
+  RMB: 'CN¥',
   HKD: 'HK$',
   TWD: 'NT$',
   EUR: '€',
   GBP: '£',
+  AUD: 'A$',
+  CAD: 'C$',
   MYR: 'RM',
   SGD: 'S$',
+  PHP: '₱',
   KRW: '₩',
   THB: '฿',
-  CNY: '¥',
-  RMB: '¥',
+  VND: '₫',
+  IDR: 'Rp',
 };
 
 export const CATEGORY_CONFIG: Record<CategoryType, { iconKey: string; label: string; color: string; bg: string }> = {
@@ -157,15 +162,21 @@ export function getMemberById(id: string): Member | undefined {
 
 const CURRENCY_MINOR_DIGITS: Record<string, number> = {
   '¥': 0,
+  'CN¥': 2,
   '₩': 0,
   '$': 2,
+  'A$': 2,
+  'C$': 2,
   'HK$': 2,
   'NT$': 2,
   '€': 2,
   '£': 2,
   'RM': 2,
   'S$': 2,
+  '₱': 2,
   '฿': 2,
+  '₫': 0,
+  'Rp': 0,
 };
 
 export function getCurrencyMinorDigits(currency: string): number {

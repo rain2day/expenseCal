@@ -12,14 +12,20 @@ const MEMBER_COLORS = ['#DD843C','#C05A5A','#72A857','#5A7EC5','#C8914A','#9055A
 const CURRENCIES = [
   { code: 'JPY', symbol: '¥',   label: '日圓 (JPY)' },
   { code: 'USD', symbol: '$',   label: '美元 (USD)' },
+  { code: 'CNY', symbol: 'CN¥', label: '人民幣 (CNY)' },
   { code: 'HKD', symbol: 'HK$', label: '港幣 (HKD)' },
   { code: 'TWD', symbol: 'NT$', label: '台幣 (TWD)' },
   { code: 'EUR', symbol: '€',   label: '歐元 (EUR)' },
   { code: 'GBP', symbol: '£',   label: '英鎊 (GBP)' },
+  { code: 'AUD', symbol: 'A$',  label: '澳元 (AUD)' },
+  { code: 'CAD', symbol: 'C$',  label: '加元 (CAD)' },
   { code: 'MYR', symbol: 'RM',  label: '馬幣 (MYR)' },
   { code: 'SGD', symbol: 'S$',  label: '新幣 (SGD)' },
+  { code: 'PHP', symbol: '₱',   label: '菲律賓披索 (PHP)' },
   { code: 'KRW', symbol: '₩',   label: '韓圜 (KRW)' },
   { code: 'THB', symbol: '฿',   label: '泰銖 (THB)' },
+  { code: 'VND', symbol: '₫',   label: '越南盾 (VND)' },
+  { code: 'IDR', symbol: 'Rp',  label: '印尼盾 (IDR)' },
 ];
 
 interface TempMember { id: string; name: string; color: string; initials: string; }
@@ -66,7 +72,13 @@ export function Onboarding() {
   }
 
   async function handleNext() {
-    if (step === 2 && (!gName.trim() || !gBudget)) return;
+    if (step === 2) {
+      if (!gName.trim()) return;
+      if (hasBudgetError) {
+        showToast('error', t.onboarding.budgetFormatError);
+        return;
+      }
+    }
     if (step === 3) {
       // Validate that at least one member has been added
       if (members.length === 0) {
@@ -77,13 +89,12 @@ export function Onboarding() {
       if (isCreating) return;
       setIsCreating(true);
       try {
-        const currSymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '¥';
-        const perPersonMinor = parseAmountInput(gBudget, currSymbol);
-        if (perPersonMinor === null || perPersonMinor <= 0) {
+        if (hasBudgetError) {
           showToast('error', t.onboarding.budgetFormatError);
-          setIsCreating(false);
           return;
         }
+        const currSymbol = currSel.symbol;
+        const perPersonMinor = parsedBudgetMinor && parsedBudgetMinor > 0 ? parsedBudgetMinor : 0;
 
         // Add timeout to prevent hanging
         const createGroupPromise = createGroup(
@@ -135,6 +146,9 @@ export function Onboarding() {
   }
 
   const currSel = CURRENCIES.find(c => c.code === currency)!;
+  const hasBudgetInput = gBudget.trim().length > 0;
+  const parsedBudgetMinor = hasBudgetInput ? parseAmountInput(gBudget, currSel.symbol) : null;
+  const hasBudgetError = hasBudgetInput && parsedBudgetMinor === null;
   const budgetStep = getCurrencyMinorDigits(currSel.symbol) === 0 ? '1' : '0.01';
 
   return (
@@ -264,7 +278,9 @@ export function Onboarding() {
                       className="flex-1 bg-transparent px-2 py-2.5 text-sm text-foreground outline-none tabular-nums placeholder:text-subtle"
                     />
                   </div>
-                  <p className="text-[10px] text-subtle mt-1">{t.onboarding.perPersonHint}</p>
+                  <p className={`text-[10px] mt-1 ${hasBudgetError ? 'text-destructive' : 'text-subtle'}`}>
+                    {hasBudgetError ? t.onboarding.budgetFormatError : t.onboarding.perPersonOptionalHint}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1.5">{t.onboarding.currencyLabel}</label>
@@ -287,7 +303,7 @@ export function Onboarding() {
 
               <button
                 onClick={handleNext}
-                disabled={!gName.trim() || !gBudget}
+                disabled={!gName.trim() || hasBudgetError}
                 className="w-full bg-primary disabled:opacity-30 text-white rounded-xl py-3 font-bold mt-6 flex items-center justify-center gap-2 active:scale-98 transition-transform"
               >
                 {t.common.next} <ArrowRight size={16} strokeWidth={2} />

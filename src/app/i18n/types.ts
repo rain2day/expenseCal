@@ -263,14 +263,20 @@ export interface Translations {
     // Currency labels
     currJPY: string;
     currUSD: string;
+    currCNY: string;
     currHKD: string;
     currEUR: string;
     currGBP: string;
     currTWD: string;
+    currAUD: string;
+    currCAD: string;
     currMYR: string;
     currSGD: string;
+    currPHP: string;
     currKRW: string;
     currTHB: string;
+    currVND: string;
+    currIDR: string;
     // Language labels
     langZh: string;
     langJa: string;
@@ -300,6 +306,7 @@ export interface Translations {
     groupNamePlaceholder: string;
     perPersonFund: string;
     perPersonHint: string;
+    perPersonOptionalHint: string;
     currencyLabel: string;
     // Step 3
     addMembersTitle: string;

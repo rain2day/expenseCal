@@ -765,20 +765,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Create initial contributions for each member
-    const now = new Date().toISOString();
-    const dateStr = now.split('T')[0];
     const initialContribs: Contribution[] = [];
-    for (const m of membersList) {
-      const contribData = {
-        memberId: m.id,
-        amount: perPersonMinor,
-        date: dateStr,
-        note: '首次夾錢',
-        createdAt: now,
-      };
-      const contribRef = await addDoc(collection(db, 'groups', gid, 'contributions'), contribData);
-      initialContribs.push({ id: contribRef.id, ...contribData });
+    if (perPersonMinor > 0) {
+      // Seed the shared fund only when the creator entered an initial per-person amount.
+      const now = new Date().toISOString();
+      const dateStr = now.split('T')[0];
+      for (const m of membersList) {
+        const contribData = {
+          memberId: m.id,
+          amount: perPersonMinor,
+          date: dateStr,
+          note: '首次夾錢',
+          createdAt: now,
+        };
+        const contribRef = await addDoc(collection(db, 'groups', gid, 'contributions'), contribData);
+        initialContribs.push({ id: contribRef.id, ...contribData });
+      }
     }
 
     // Save groupId to localStorage and state
