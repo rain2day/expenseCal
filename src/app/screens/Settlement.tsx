@@ -3,7 +3,7 @@ import { Check, PartyPopper, Wallet, Trash2, ChevronDown, ChevronUp, CreditCard 
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { MemberAvatar, BalanceBadge, StaggerContainer, StaggerItem, CategoryIcon } from '../components/SharedComponents';
-import { FUND_PAYER_ID } from '../data/sampleData';
+import { FUND_PAYER_ID, taxAdjustMinorAmount } from '../data/sampleData';
 import { useT } from '../i18n/I18nContext';
 
 function Confetti() {
@@ -61,16 +61,17 @@ export function Settlement() {
       date: string;
     }> = [];
 
-    const TAX_RATE = 1.1;
     groupBuys.forEach(gb => {
       const payer = getMember(gb.payerId);
       if (!payer) return;
-      const taxAdj = (amt: number) => gb.taxFree ? Math.round(amt / TAX_RATE) : amt;
       // Sum items per non-payer member
       const memberTotals = new Map<string, number>();
       gb.items.forEach(item => {
         if (item.memberId !== gb.payerId) {
-          memberTotals.set(item.memberId, (memberTotals.get(item.memberId) || 0) + taxAdj(item.amount));
+          memberTotals.set(
+            item.memberId,
+            (memberTotals.get(item.memberId) || 0) + taxAdjustMinorAmount(item.amount, gb.taxFree)
+          );
         }
       });
       memberTotals.forEach((amount, memberId) => {

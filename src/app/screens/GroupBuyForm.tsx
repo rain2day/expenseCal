@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { ArrowLeft, Plus, X, Calendar, Check, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { CategoryType, parseAmountInput, formatAmountInput, getCurrencyMinorDigits } from '../data/sampleData';
+import { CategoryType, parseAmountInput, formatAmountInput, getCurrencyMinorDigits, taxAdjustMinorAmount } from '../data/sampleData';
 import { MemberAvatar, CategoryBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { useT } from '../i18n/I18nContext';
 import { useVisualViewportHeight } from '../hooks/useVisualViewportHeight';
@@ -34,16 +34,19 @@ export function GroupBuyForm() {
   const amountStep = getCurrencyMinorDigits(currency) === 0 ? '1' : '0.01';
 
   // ── Settlement preview ─────────────────────────────────────────────
-  const TAX_RATE = 1.1;
-  const taxAdj = (amt: number) => taxFree ? Math.round(amt / TAX_RATE) : amt;
+  const adjustedItems = items.map((item) => ({
+    ...item,
+    adjustedAmount: taxAdjustMinorAmount(item.amount, taxFree),
+  }));
   const totalRaw = items.reduce((s, i) => s + i.amount, 0);
-  const total = taxAdj(totalRaw);
-  const payerTotalRaw = items.filter(i => i.memberId === payerId).reduce((s, i) => s + i.amount, 0);
-  const payerTotal = taxAdj(payerTotalRaw);
-  const debtors = items
+  const total = adjustedItems.reduce((sum, item) => sum + item.adjustedAmount, 0);
+  const payerTotal = adjustedItems
+    .filter((item) => item.memberId === payerId)
+    .reduce((sum, item) => sum + item.adjustedAmount, 0);
+  const debtors = adjustedItems
     .filter(i => i.memberId !== payerId)
     .reduce((acc, i) => {
-      acc[i.memberId] = (acc[i.memberId] || 0) + taxAdj(i.amount);
+      acc[i.memberId] = (acc[i.memberId] || 0) + i.adjustedAmount;
       return acc;
     }, {} as Record<string, number>);
   const taxSaved = taxFree ? totalRaw - total : 0;

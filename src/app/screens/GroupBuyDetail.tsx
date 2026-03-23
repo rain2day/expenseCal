@@ -4,6 +4,7 @@ import { ArrowLeft, Trash2, Check, Calendar, Wallet, ShoppingBag, PartyPopper } 
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
+import { taxAdjustMinorAmount } from '../data/sampleData';
 import { CategoryIcon, MemberAvatar, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 
 function MiniConfetti() {
@@ -60,15 +61,17 @@ export function GroupBuyDetail() {
   }
 
   const payer = getMember(gb.payerId);
-  const TAX_RATE = 1.1;
-  const taxAdj = (amt: number) => gb.taxFree ? Math.round(amt / TAX_RATE) : amt;
-  const total = taxAdj(gb.items.reduce((s, i) => s + i.amount, 0));
+  const adjustedItems = gb.items.map((item) => ({
+    ...item,
+    adjustedAmount: taxAdjustMinorAmount(item.amount, gb.taxFree),
+  }));
+  const total = adjustedItems.reduce((sum, item) => sum + item.adjustedAmount, 0);
 
   // Group items by debtor (non-payer members)
   const debtors: Record<string, number> = {};
-  gb.items.forEach(i => {
+  adjustedItems.forEach(i => {
     if (i.memberId !== gb.payerId) {
-      debtors[i.memberId] = (debtors[i.memberId] || 0) + taxAdj(i.amount);
+      debtors[i.memberId] = (debtors[i.memberId] || 0) + i.adjustedAmount;
     }
   });
 

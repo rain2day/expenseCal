@@ -139,6 +139,8 @@ export const CATEGORY_CONFIG: Record<CategoryType, { iconKey: string; label: str
   other:         { iconKey: 'Package',     label: '其他', color: '#9A7565', bg: '#261A14' },
 };
 
+const TAX_FREE_RATE = 1.1;
+
 export function formatJPY(amount: number): string {
   return `¥${amount.toLocaleString()}`;
 }
@@ -187,6 +189,23 @@ export function getCurrencyMinorDigits(currency: string): number {
 export function normalizeMinorAmount(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
   return Math.round(value);
+}
+
+export function taxAdjustMinorAmount(amountMinor: number, taxFree = false): number {
+  const normalized = normalizeMinorAmount(amountMinor);
+  return taxFree ? Math.round(normalized / TAX_FREE_RATE) : normalized;
+}
+
+export function placeholderMember(id: string): Member {
+  const safeId = String(id || '').trim() || 'unknown';
+  const initials = safeId.slice(0, 2).toUpperCase() || '?';
+  return {
+    id: safeId,
+    name: safeId,
+    initials,
+    color: '#6B7280',
+    role: 'member',
+  };
 }
 
 export function parseAmountInput(input: string, currency: string): number | null {
@@ -271,10 +290,24 @@ export function splitAmountEvenly(amountMinor: number, participantIds: string[])
 }
 
 export function computeBalances(expenses: Expense[], members: Member[], contributions: Contribution[] = []) {
+  const allMembers = [...members];
+  const knownMemberIds = new Set(members.map((member) => member.id));
+  const ensureMember = (id: string) => {
+    if (!id || id === FUND_PAYER_ID || knownMemberIds.has(id)) return;
+    knownMemberIds.add(id);
+    allMembers.push(placeholderMember(id));
+  };
+
+  contributions.forEach((contribution) => ensureMember(contribution.memberId));
+  expenses.forEach((expense) => {
+    ensureMember(expense.paidBy);
+    expense.splitAmong.forEach((memberId) => ensureMember(memberId));
+  });
+
   const contributed: Record<string, number> = {};
   const paid: Record<string, number> = {};
   const share: Record<string, number> = {};
-  members.forEach(m => { contributed[m.id] = 0; paid[m.id] = 0; share[m.id] = 0; });
+  allMembers.forEach(m => { contributed[m.id] = 0; paid[m.id] = 0; share[m.id] = 0; });
 
   // Sum each member's contributions to the fund
   contributions.forEach(c => {
@@ -283,7 +316,7 @@ export function computeBalances(expenses: Expense[], members: Member[], contribu
     }
   });
 
-  const memberIdSet = new Set(members.map((m) => m.id));
+  const memberIdSet = new Set(allMembers.map((m) => m.id));
 
   expenses.forEach(exp => {
     const amount = Math.max(0, normalizeMinorAmount(exp.amount));
@@ -304,7 +337,7 @@ export function computeBalances(expenses: Expense[], members: Member[], contribu
     });
   });
 
-  return members.map(m => ({
+  return allMembers.map(m => ({
     member: m,
     contributed: contributed[m.id] || 0,
     paid: paid[m.id] || 0,

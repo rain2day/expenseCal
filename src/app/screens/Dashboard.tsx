@@ -12,13 +12,15 @@ import {
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { groupName, members, expenses, totalSpent, balances, currency, unreadCount, markAllRead, fundBalance, fundSpent, totalContributions, contributions, addContribution, showToast, getMember, fmt } = useApp();
+  const { groupName, members, expenses, totalSpent, balances, currency, unreadCount, markAllRead, fundBalance, fundSpent, totalContributions, contributions, settlements, addContribution, showToast, getMember, fmt } = useApp();
   const { t } = useT();
   const lastQuickNavRef = useRef(0);
 
   const perPerson = Math.round(totalSpent / members.length);
   const remaining = fundBalance;
-  const memberAdvanced = totalSpent - fundSpent;
+  const outstandingAdvance = settlements
+    .filter((settlement) => !settlement.done && settlement.toId !== FUND_PAYER_ID)
+    .reduce((sum, settlement) => sum + settlement.amount, 0);
   // Health = net coverage: how much of the fund covers ALL spending (including advances)
   const healthPctRaw = totalContributions > 0
     ? Math.round(((totalContributions - totalSpent) / totalContributions) * 100)
@@ -163,11 +165,11 @@ export function Dashboard() {
               <p className={`font-black tabular-nums text-sm ${fundBalance >= 0 ? 'text-success' : 'text-destructive'}`}>{fmt(fundBalance)}</p>
             </div>
           </div>
-          {memberAdvanced > 0 && (
+          {outstandingAdvance > 0 && (
             <div className="bg-background rounded-xl p-3 border border-amber-500/30 mb-1">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">{t.dashboard.advanceTotal}</p>
-                <p className="font-black tabular-nums text-sm" style={{ color: '#C8914A' }}>{fmt(memberAdvanced)}</p>
+                <p className="font-black tabular-nums text-sm" style={{ color: '#C8914A' }}>{fmt(outstandingAdvance)}</p>
               </div>
             </div>
           )}

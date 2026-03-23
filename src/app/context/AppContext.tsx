@@ -22,6 +22,7 @@ import {
   GROUP_BUYS,
   formatAmount,
   normalizeMinorAmount,
+  placeholderMember,
 } from '../data/sampleData';
 import type { Settlement, CategoryType, Contribution, PersonalExpense, GroupBuy } from '../data/sampleData';
 
@@ -107,6 +108,46 @@ function convertMinorByCurrencyDigits(amount: number, fromCurrency: string, toCu
   if (delta === 0) return normalized;
   if (delta > 0) return normalizeMinorAmount(normalized * 10 ** delta);
   return normalizeMinorAmount(normalized / 10 ** Math.abs(delta));
+}
+
+function convertExactMinorAmount(amount: number, oldDigits: number, newDigits: number, rate: number): number {
+  const oldMajor = normalizeMinorAmount(amount) / Math.pow(10, oldDigits);
+  return oldMajor * rate * Math.pow(10, newDigits);
+}
+
+function convertAmountsPreservingTotal<T extends { id: string; amount: number }>(
+  items: T[],
+  oldDigits: number,
+  newDigits: number,
+  rate: number,
+): Map<string, number> {
+  if (items.length === 0) return new Map();
+
+  const exacts = items.map((item) => {
+    const exact = convertExactMinorAmount(item.amount, oldDigits, newDigits, rate);
+    const base = Math.floor(exact);
+    return {
+      id: item.id,
+      base,
+      fraction: exact - base,
+    };
+  });
+
+  const targetTotal = Math.round(exacts.reduce((sum, item) => sum + item.base + item.fraction, 0));
+  const baseTotal = exacts.reduce((sum, item) => sum + item.base, 0);
+  let remainder = targetTotal - baseTotal;
+  const converted = new Map(exacts.map((item) => [item.id, item.base]));
+  const remainderOrder = [...exacts].sort((a, b) => {
+    if (b.fraction !== a.fraction) return b.fraction - a.fraction;
+    return a.id.localeCompare(b.id);
+  });
+
+  for (let i = 0; i < remainderOrder.length && remainder > 0; i += 1, remainder -= 1) {
+    const item = remainderOrder[i];
+    converted.set(item.id, (converted.get(item.id) ?? item.base) + 1);
+  }
+
+  return converted;
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -888,34 +929,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const convertCurrency = useCallback(async (newSymbol: string, rate: number): Promise<void> => {
     const oldDigits = getCurrencyMinorDigits(currency);
     const newDigits = getCurrencyMinorDigits(newSymbol);
+    const convertedExpenses = convertAmountsPreservingTotal(expenses, oldDigits, newDigits, rate);
+    const convertedContributions = convertAmountsPreservingTotal(contributions, oldDigits, newDigits, rate);
 
-    function convert(oldMinor: number): number {
-      const oldMajor = oldMinor / Math.pow(10, oldDigits);
-      const newMajor = oldMajor * rate;
-      return Math.round(newMajor * Math.pow(10, newDigits));
+    function convertSingle(oldMinor: number): number {
+      return Math.round(convertExactMinorAmount(oldMinor, oldDigits, newDigits, rate));
     }
 
     if (!demoMode && groupId) {
       const batch = writeBatch(db);
 
       for (const exp of expenses) {
-        batch.update(doc(db, 'groups', groupId, 'expenses', exp.id), { amount: convert(exp.amount) });
+        batch.update(doc(db, 'groups', groupId, 'expenses', exp.id), {
+          amount: convertedExpenses.get(exp.id) ?? convertSingle(exp.amount),
+        });
       }
       for (const con of contributions) {
-        batch.update(doc(db, 'groups', groupId, 'contributions', con.id), { amount: convert(con.amount) });
+        batch.update(doc(db, 'groups', groupId, 'contributions', con.id), {
+          amount: convertedContributions.get(con.id) ?? convertSingle(con.amount),
+        });
       }
       batch.update(doc(db, 'groups', groupId), {
         currency: newSymbol,
-        budget: convert(budget),
+        budget: convertSingle(budget),
       });
 
       await batch.commit();
     }
 
+    localStorage.setItem('gcd-currency', newSymbol);
     setCurrencyLocal(newSymbol);
-    setBudget(b => convert(b));
-    setExpenses(prev => prev.map(e => ({ ...e, amount: convert(e.amount) })));
-    setContributions(prev => prev.map(c => ({ ...c, amount: convert(c.amount) })));
+    setBudget((currentBudget) => convertSingle(currentBudget));
+    setExpenses((prev) => prev.map((expense) => ({
+      ...expense,
+      amount: convertedExpenses.get(expense.id) ?? convertSingle(expense.amount),
+    })));
+    setContributions((prev) => prev.map((contribution) => ({
+      ...contribution,
+      amount: convertedContributions.get(contribution.id) ?? convertSingle(contribution.amount),
+    })));
   }, [currency, groupId, demoMode, expenses, contributions, budget]);
 
   // ── enterDemoMode ──────────────────────────────────────────────────
@@ -1063,7 +1115,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // ── getMember (live state lookup) ──────────────────────────────────
   const getMember = useCallback((id: string): Member | undefined => {
-    return members.find(m => m.id === id);
+    if (!id || id === FUND_PAYER_ID) return undefined;
+    return members.find((member) => member.id === id) ?? placeholderMember(id);
   }, [members]);
 
   // ── fmt (currency-aware format) ────────────────────────────────────

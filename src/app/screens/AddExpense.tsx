@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { X, Calendar, Check, Wallet, Lock, ShoppingBag, Plus } from 'lucide-react';
 import { motion, AnimatePresence, LayoutGroup } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput } from '../data/sampleData';
+import { CategoryType, Expense, FUND_PAYER_ID, formatAmountInput, getCurrencyMinorDigits, parseAmountInput, taxAdjustMinorAmount } from '../data/sampleData';
 import { MemberAvatar, CategoryBadge, CategoryIcon, StaggerContainer, StaggerItem } from '../components/SharedComponents';
 import { useT } from '../i18n/I18nContext';
 import { useVisualViewportHeight } from '../hooks/useVisualViewportHeight';
@@ -209,15 +209,18 @@ export function AddExpense() {
   const amountStep = getCurrencyMinorDigits(currency) === 0 ? '1' : '0.01';
 
   // GroupBuy settlement preview
-  const TAX_RATE = 1.1;
-  const taxAdj = (amt: number) => gbTaxFree ? Math.round(amt / TAX_RATE) : amt;
+  const adjustedGroupBuyItems = gbItems.map((item) => ({
+    ...item,
+    adjustedAmount: taxAdjustMinorAmount(item.amount, gbTaxFree),
+  }));
   const gbTotalRaw = gbItems.reduce((s, i) => s + i.amount, 0);
-  const gbTotal = taxAdj(gbTotalRaw);
-  const gbPayerTotalRaw = gbItems.filter(i => i.memberId === gbPayerId).reduce((s, i) => s + i.amount, 0);
-  const gbPayerTotal = taxAdj(gbPayerTotalRaw);
-  const gbDebtors = gbItems
+  const gbTotal = adjustedGroupBuyItems.reduce((sum, item) => sum + item.adjustedAmount, 0);
+  const gbPayerTotal = adjustedGroupBuyItems
+    .filter((item) => item.memberId === gbPayerId)
+    .reduce((sum, item) => sum + item.adjustedAmount, 0);
+  const gbDebtors = adjustedGroupBuyItems
     .filter(i => i.memberId !== gbPayerId)
-    .reduce((acc, i) => { acc[i.memberId] = (acc[i.memberId] || 0) + taxAdj(i.amount); return acc; }, {} as Record<string, number>);
+    .reduce((acc, i) => { acc[i.memberId] = (acc[i.memberId] || 0) + i.adjustedAmount; return acc; }, {} as Record<string, number>);
   const gbTaxSaved = gbTaxFree ? gbTotalRaw - gbTotal : 0;
   const gbPayerMember = gbPayerId ? getMember(gbPayerId) : undefined;
   const gbUniq = new Set(gbItems.map(i => i.memberId));

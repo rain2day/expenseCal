@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { useApp } from '../context/AppContext';
 import { useT } from '../i18n/I18nContext';
-import { CATEGORY_CONFIG, CategoryType, TIME_SERIES_DATA, Expense, Contribution } from '../data/sampleData';
+import { CATEGORY_CONFIG, CategoryType, TIME_SERIES_DATA, Expense, Contribution, FUND_PAYER_ID } from '../data/sampleData';
 import { StaggerContainer, StaggerItem } from '../components/SharedComponents';
 
 type Tab = 'category' | 'person' | 'trend';
@@ -86,7 +86,7 @@ function trendStats(data: TrendPoint[]) {
 }
 
 export function Analytics() {
-  const { expenses, contributions, balances, budget, demoMode, currency, fmt, fundSpent, fundBalance, totalContributions } = useApp();
+  const { expenses, contributions, balances, budget, demoMode, currency, fmt, fundSpent, fundBalance, totalContributions, settlements } = useApp();
   const { t } = useT();
   const [tab, setTab] = useState<Tab>('category');
 
@@ -400,9 +400,11 @@ export function Analytics() {
 
           {/* ── Fund Breakdown Card ──────────────────────────────── */}
           {stats && totalContributions > 0 && (() => {
-            const memberAdvanced = totalSpent - fundSpent;
+            const outstandingAdvance = settlements
+              .filter((settlement) => !settlement.done && settlement.toId !== FUND_PAYER_ID)
+              .reduce((sum, settlement) => sum + settlement.amount, 0);
             const netBalance = totalContributions - totalSpent;
-            const advanceRatio = totalSpent > 0 ? memberAdvanced / totalSpent : 0;
+            const advanceRatio = totalSpent > 0 ? outstandingAdvance / totalSpent : 0;
 
             return (
               <StaggerItem>
@@ -417,7 +419,7 @@ export function Analytics() {
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-muted-foreground">{t.analytics.advancePending}</span>
                     <span className="text-xs font-bold tabular-nums" style={{ color: advanceRatio > 0.5 ? '#C8914A' : 'var(--foreground)' }}>
-                      {fmt(memberAdvanced)}
+                      {fmt(outstandingAdvance)}
                     </span>
                   </div>
                   <div className="border-t border-border" />
@@ -436,7 +438,7 @@ export function Analytics() {
                 </div>
 
                 {/* Advance ratio bar */}
-                {memberAdvanced > 0 && (
+                {outstandingAdvance > 0 && (
                   <div className="mt-3 pt-3 border-t border-border">
                     <div className="flex justify-between text-[10px] text-subtle mb-1.5">
                       <span>{t.analytics.paymentRatio}</span>

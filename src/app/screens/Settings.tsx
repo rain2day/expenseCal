@@ -162,9 +162,7 @@ export function Settings() {
       setPendingRate(rate);
     } catch {
       showToast('error', t.settings.fetchRateFailed);
-      setCurrency(symbol);
       setShowCurrencyPicker(false);
-      showToast('success', `${t.settings.currencyChanged} ${symbol}`);
     } finally {
       setIsFetchingRate(false);
     }
