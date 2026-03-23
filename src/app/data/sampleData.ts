@@ -198,11 +198,10 @@ export function taxAdjustMinorAmount(amountMinor: number, taxFree = false): numb
 
 export function placeholderMember(id: string): Member {
   const safeId = String(id || '').trim() || 'unknown';
-  const initials = safeId.slice(0, 2).toUpperCase() || '?';
   return {
     id: safeId,
-    name: safeId,
-    initials,
+    name: '離隊成員',
+    initials: '離',
     color: '#6B7280',
     role: 'member',
   };
