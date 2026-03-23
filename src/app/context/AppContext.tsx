@@ -280,49 +280,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     window.location.reload();
   }, []);
 
-  const handleMissingGroup = useCallback((missingGroupId: string) => {
-    if (cleanupRef.current) {
-      cleanupRef.current();
-      cleanupRef.current = null;
-    }
-    if (personalCleanupRef.current) {
-      personalCleanupRef.current();
-      personalCleanupRef.current = null;
-    }
-    if (groupBuysCleanupRef.current) {
-      groupBuysCleanupRef.current();
-      groupBuysCleanupRef.current = null;
-    }
-
-    const updatedGroups = savedGroups.filter((group) => group.id !== missingGroupId);
-    setSavedGroups(updatedGroups);
-    localStorage.setItem('gcd-groups', JSON.stringify(updatedGroups));
-    localStorage.removeItem('gcd-groupId');
-
-    setGroupId(null);
-    setDemoMode(true);
-    setIsLoading(false);
-    setMembers(MEMBERS);
-    setExpenses(EXPENSES);
-    setContributions(CONTRIBUTIONS);
-    setPersonalExpenses([]);
-    setGroupBuys([]);
-    setBudget(0);
-    setGroupNameLocal(GROUP_NAME);
-    setCurrencyLocal(canonicalCurrencySymbol(localStorage.getItem('gcd-currency') || CURRENCY));
-
-    showToast('error', t.joinGroup.notFoundDesc);
-    window.location.href = import.meta.env.BASE_URL || '/';
-  }, [savedGroups, showToast, t]);
-
-  const ensureGroupExists = useCallback(async (gid: string) => {
-    const snap = await getDoc(doc(db, 'groups', gid));
-    if (!snap.exists()) {
-      throw new Error('GROUP_NOT_FOUND');
-    }
-    return snap;
-  }, []);
-
   // ── leaveCurrentGroup ────────────────────────────────────────────
   const leaveCurrentGroup = useCallback(() => {
     if (!groupId) return;
@@ -405,6 +362,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const id = Date.now().toString();
     setToasts(prev => [...prev, { id, type, message }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  }, []);
+
+  const handleMissingGroup = useCallback((missingGroupId: string) => {
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+    if (personalCleanupRef.current) {
+      personalCleanupRef.current();
+      personalCleanupRef.current = null;
+    }
+    if (groupBuysCleanupRef.current) {
+      groupBuysCleanupRef.current();
+      groupBuysCleanupRef.current = null;
+    }
+
+    const updatedGroups = savedGroups.filter((group) => group.id !== missingGroupId);
+    setSavedGroups(updatedGroups);
+    localStorage.setItem('gcd-groups', JSON.stringify(updatedGroups));
+    localStorage.removeItem('gcd-groupId');
+
+    setGroupId(null);
+    setDemoMode(true);
+    setIsLoading(false);
+    setMembers(MEMBERS);
+    setExpenses(EXPENSES);
+    setContributions(CONTRIBUTIONS);
+    setPersonalExpenses([]);
+    setGroupBuys([]);
+    setBudget(0);
+    setGroupNameLocal(GROUP_NAME);
+    setCurrencyLocal(canonicalCurrencySymbol(localStorage.getItem('gcd-currency') || CURRENCY));
+
+    showToast('error', t.joinGroup.notFoundDesc);
+    window.location.href = import.meta.env.BASE_URL || '/';
+  }, [savedGroups, showToast, t]);
+
+  const ensureGroupExists = useCallback(async (gid: string) => {
+    const snap = await getDoc(doc(db, 'groups', gid));
+    if (!snap.exists()) {
+      throw new Error('GROUP_NOT_FOUND');
+    }
+    return snap;
   }, []);
 
   // ── addPersonalExpense ──────────────────────────────────────────────
