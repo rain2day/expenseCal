@@ -103,6 +103,8 @@ const CURRENCY_LABEL_KEYS: Record<string, string> = {
   'Rp': 'currIDR',
 };
 
+const APP_VERSION = 'v1.2';
+
 export function Settings() {
   const navigate = useNavigate();
   const { appPath, entryPath } = useAppPaths();
@@ -660,7 +662,7 @@ export function Settings() {
         <SectionCard title={t.settings.sectionAbout}>
           <SettingItem
             label={t.settings.version}
-            value="v1.0.0"
+            value={APP_VERSION}
             icon={<Info size={14} strokeWidth={2} />}
           />
           <SettingItem
@@ -680,7 +682,7 @@ export function Settings() {
 
         <StaggerItem>
         <div className="text-center py-4">
-          <p className="text-xs text-subtle">{t.nav.appName} v1.0.0</p>
+          <p className="text-xs text-subtle">{t.nav.appName} {APP_VERSION}</p>
           <p className="text-xs text-subtle mt-0.5">{t.settings.tagline}</p>
         </div>
         </StaggerItem>
