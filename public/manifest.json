@@ -2,30 +2,30 @@
   "name": "旅行公費",
   "short_name": "旅行公費",
   "description": "輕鬆計公數，朋友唔鬧交。旅遊分帳神器。",
-  "start_url": "/web/expenseCal/",
-  "scope": "/web/expenseCal/",
+  "start_url": "/expenseCal/",
+  "scope": "/expenseCal/",
   "display": "standalone",
   "background_color": "#070D1A",
   "theme_color": "#0D1526",
   "icons": [
     {
-      "src": "/web/expenseCal/favicon-32.png",
+      "src": "/expenseCal/favicon-32.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/web/expenseCal/apple-touch-icon.png",
+      "src": "/expenseCal/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/web/expenseCal/icon-192.png",
+      "src": "/expenseCal/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/web/expenseCal/icon-512.png",
+      "src": "/expenseCal/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
