@@ -19,6 +19,10 @@ service cloud.firestore {
       return v is int && v > 0 && v <= 1000000000;
     }
 
+    function isNonNegativeAmountMinorUnit(v) {
+      return v is int && v >= 0 && v <= 1000000000;
+    }
+
     function isMemberRole(v) {
       return v == 'admin' || v == 'member';
     }
@@ -30,7 +34,7 @@ service cloud.firestore {
     function validGroupData(data) {
       return data.keys().hasOnly(['name', 'budget', 'currency', 'createdAt']) &&
         isShortString(data.name, 80) &&
-        isAmountMinorUnit(data.budget) &&
+        isNonNegativeAmountMinorUnit(data.budget) &&
         isShortString(data.currency, 4) &&
         isShortString(data.createdAt, 40);
     }

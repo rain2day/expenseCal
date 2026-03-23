@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
-  collection, doc, setDoc, addDoc, deleteDoc, updateDoc, getDocs,
+  collection, doc, setDoc, addDoc, deleteDoc, updateDoc, getDoc, getDocs,
   onSnapshot, query, orderBy, writeBatch,
 } from 'firebase/firestore';
 import { db, ensureAuth } from '../firebase';
@@ -278,6 +278,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const switchGroup = useCallback((gid: string) => {
     localStorage.setItem('gcd-groupId', gid);
     window.location.reload();
+  }, []);
+
+  const handleMissingGroup = useCallback((missingGroupId: string) => {
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+    if (personalCleanupRef.current) {
+      personalCleanupRef.current();
+      personalCleanupRef.current = null;
+    }
+    if (groupBuysCleanupRef.current) {
+      groupBuysCleanupRef.current();
+      groupBuysCleanupRef.current = null;
+    }
+
+    const updatedGroups = savedGroups.filter((group) => group.id !== missingGroupId);
+    setSavedGroups(updatedGroups);
+    localStorage.setItem('gcd-groups', JSON.stringify(updatedGroups));
+    localStorage.removeItem('gcd-groupId');
+
+    setGroupId(null);
+    setDemoMode(true);
+    setIsLoading(false);
+    setMembers(MEMBERS);
+    setExpenses(EXPENSES);
+    setContributions(CONTRIBUTIONS);
+    setPersonalExpenses([]);
+    setGroupBuys([]);
+    setBudget(0);
+    setGroupNameLocal(GROUP_NAME);
+    setCurrencyLocal(canonicalCurrencySymbol(localStorage.getItem('gcd-currency') || CURRENCY));
+
+    showToast('error', t.joinGroup.notFoundDesc);
+    window.location.href = import.meta.env.BASE_URL || '/';
+  }, [savedGroups, showToast, t]);
+
+  const ensureGroupExists = useCallback(async (gid: string) => {
+    const snap = await getDoc(doc(db, 'groups', gid));
+    if (!snap.exists()) {
+      throw new Error('GROUP_NOT_FOUND');
+    }
+    return snap;
   }, []);
 
   // ── leaveCurrentGroup ────────────────────────────────────────────
@@ -586,23 +629,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── Firestore: load group with listeners ───────────────────────────
   const loadGroup = useCallback((gid: string) => {
     setIsLoading(true);
+    let groupMissing = false;
+    let unsubGroup = () => {};
+    let unsubMembers = () => {};
+    let unsubExpenses = () => {};
+    let unsubContributions = () => {};
+
+    const cleanup = () => {
+      unsubGroup();
+      unsubMembers();
+      unsubExpenses();
+      unsubContributions();
+    };
 
     // Group doc listener
     const groupDocRef = doc(db, 'groups', gid);
-    const unsubGroup = onSnapshot(groupDocRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setGroupNameLocal(data.name || GROUP_NAME);
-        const nextCurrency = canonicalCurrencySymbol(data.currency || CURRENCY);
-        setCurrencyLocal(nextCurrency);
-        localStorage.setItem('gcd-currency', nextCurrency);
-        setBudget(data.budget || 0);
+    unsubGroup = onSnapshot(groupDocRef, (snap) => {
+      if (!snap.exists()) {
+        if (!groupMissing) {
+          groupMissing = true;
+          cleanup();
+          void handleMissingGroup(gid);
+        }
+        return;
       }
+
+      const data = snap.data();
+      setGroupNameLocal(data.name || GROUP_NAME);
+      const nextCurrency = canonicalCurrencySymbol(data.currency || CURRENCY);
+      setCurrencyLocal(nextCurrency);
+      localStorage.setItem('gcd-currency', nextCurrency);
+      setBudget(data.budget || 0);
     });
 
     // Members subcollection listener
     const membersRef = collection(db, 'groups', gid, 'members');
-    const unsubMembers = onSnapshot(membersRef, (snap) => {
+    unsubMembers = onSnapshot(membersRef, (snap) => {
+      if (groupMissing) return;
       const mems: Member[] = [];
       snap.forEach((d) => {
         const data = d.data();
@@ -622,7 +685,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Expenses subcollection listener
     const expensesRef = collection(db, 'groups', gid, 'expenses');
     const expensesQuery = query(expensesRef, orderBy('date', 'desc'));
-    const unsubExpenses = onSnapshot(expensesQuery, (snap) => {
+    unsubExpenses = onSnapshot(expensesQuery, (snap) => {
+      if (groupMissing) return;
       const exps: Expense[] = [];
       snap.forEach((d) => {
         const data = d.data();
@@ -645,7 +709,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const contributionsRef = collection(db, 'groups', gid, 'contributions');
     const contributionsQuery = query(contributionsRef, orderBy('date', 'desc'));
     let hasDeduped = false;
-    const unsubContributions = onSnapshot(contributionsQuery, async (snap) => {
+    unsubContributions = onSnapshot(contributionsQuery, async (snap) => {
+      if (groupMissing) return;
       const contribs: Contribution[] = [];
       snap.forEach((d) => {
         const data = d.data();
@@ -683,16 +748,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setContributions(contribs);
     });
 
-    const cleanup = () => {
-      unsubGroup();
-      unsubMembers();
-      unsubExpenses();
-      unsubContributions();
-    };
-
     cleanupRef.current = cleanup;
     return cleanup;
-  }, []);
+  }, [handleMissingGroup]);
 
   // Load group on mount if we have a groupId and are not in demo mode
   useEffect(() => {
@@ -803,6 +861,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ── joinGroup ──────────────────────────────────────────────────────
   const joinGroup = useCallback(async (gid: string, member: Member): Promise<void> => {
     await ensureAuth();
+    await ensureGroupExists(gid);
 
     await setDoc(doc(db, 'groups', gid, 'members', member.id), {
       name: member.name,
@@ -814,15 +873,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('gcd-groupId', gid);
     setGroupId(gid);
     setDemoMode(false);
-  }, []);
+  }, [ensureGroupExists]);
 
   // ── enterGroup (view-only / claim existing member) ─────────────────
   const enterGroup = useCallback(async (gid: string): Promise<void> => {
     await ensureAuth();
+    await ensureGroupExists(gid);
     localStorage.setItem('gcd-groupId', gid);
     setGroupId(gid);
     setDemoMode(false);
-  }, []);
+  }, [ensureGroupExists]);
 
   // ── convertCurrency ────────────────────────────────────────────────
   const convertCurrency = useCallback(async (newSymbol: string, rate: number): Promise<void> => {

@@ -115,6 +115,7 @@ export function Settings() {
     totalContributions,
     fmt,
     groupId, demoMode,
+    enterGroup,
     savedGroups, switchGroup, leaveCurrentGroup,
   } = useApp();
 
@@ -199,6 +200,24 @@ export function Settings() {
       setGroupName(tempName.trim());
     }
     setEditingName(false);
+  }
+
+  async function handleConnectGroup() {
+    const nextGroupId = connectId.trim();
+    if (!nextGroupId) {
+      showToast('info', t.settings.enterGroupId);
+      return;
+    }
+
+    try {
+      await enterGroup(nextGroupId);
+      showToast('success', t.settings.switchedGroup);
+      setConnectId('');
+      navigate(appPath('/dashboard'));
+    } catch (err) {
+      console.error('Failed to connect group:', err);
+      showToast('error', t.joinGroup.notFoundDesc);
+    }
   }
 
   function exportCSV() {
@@ -517,8 +536,7 @@ export function Settings() {
                   onChange={e => setConnectId(e.target.value)}
                   onKeyDown={e => {
                     if (e.key === 'Enter' && connectId.trim()) {
-                      localStorage.setItem('gcd-groupId', connectId.trim());
-                      window.location.reload();
+                      void handleConnectGroup();
                     }
                   }}
                   placeholder={t.settings.connectPlaceholder}
@@ -526,12 +544,7 @@ export function Settings() {
                 />
                 <button
                   onClick={() => {
-                    if (!connectId.trim()) {
-                      showToast('info', t.settings.enterGroupId);
-                      return;
-                    }
-                    localStorage.setItem('gcd-groupId', connectId.trim());
-                    window.location.reload();
+                    void handleConnectGroup();
                   }}
                   className="px-3 py-2 bg-primary text-white text-xs font-bold rounded-lg active:scale-95 transition-transform flex-shrink-0"
                 >
